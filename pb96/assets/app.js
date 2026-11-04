@@ -83,9 +83,10 @@ function numeric(x){
 function joinedNPB(seasons,extended,supplement){
  const map=new Map(extended.rows.map(x=>[[x.id,x.year,x.club].join("|"),x]));
  const bat=new Map((supplement?.rows||[]).filter(x=>x.kind==="batting").map(x=>[[x.id,x.year,x.club].join("|"),x]));
+ const pit=new Map((supplement?.rows||[]).filter(x=>x.kind==="pitching").map(x=>[[x.id,x.year,x.club].join("|"),x]));
  return seasons.filter(s=>s.league==="NPB").map(season=>{
    const key=[season.id,season.year,season.club].join("|");
-   return {season,detail:map.get(key)||null,batting:bat.get(key)||null};
+   return {season,detail:map.get(key)||null,batting:bat.get(key)||null,pitching:pit.get(key)||null};
  });
 }
 function sumNPB(rows){
