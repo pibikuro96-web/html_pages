@@ -1,10 +1,5 @@
 name: "NPB supplementary one-time import"
 on:
-  push:
-    branches: [main]
-    paths:
-      - "tools/npb_profile_import.py"
-      - ".github/workflows/npb-profile-import.yml"
   workflow_dispatch:
 permissions:
   contents: write
@@ -22,7 +17,7 @@ jobs:
       - name: Setup parser
         run: python -m pip install beautifulsoup4
       - name: Import and verify NPB official rows
-        run: python tools/npb_profile_import.py --only 018,064,074 --delay 2.0
+        run: python tools/npb_profile_import.py --limit 0 --delay 2.0
       - name: Commit verified data and audit
         run: |
           git config user.name "github-actions[bot]"

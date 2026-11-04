@@ -263,7 +263,7 @@ const rows=allRows.filter(r=>r.league!=="NPB");
 const leagueList=[...new Set(rows.map(r=>r.league))].sort((a,b)=>String(a).localeCompare(String(b),"ja"));
 app.innerHTML=title("年度別成績（NPB以外）","独立リーグ・MLB・その他海外リーグの成績を表示します。NPB成績は選手詳細とNPBランキングで確認できます。")+
 `<div class="control-bar"><label>選手名・球団名<input id="q" type="search" placeholder="例：岡本、DeNA"></label><label>リーグ<select id="league"><option value="">すべて</option>${leagueList.map(l=>`<option value="${e(l)}">${e(l)}</option>`).join("")}</select></label><label>年度<select id="year"><option value="">すべて</option>${[...new Set(rows.map(r=>r.year))].sort((a,b)=>Number(a)-Number(b)).map(y=>`<option>${e(y)}</option>`).join("")}</select></label></div><p id="count" class="small muted"></p><div id="results"></div>`+
-info("現在の収録は独立リーグ37行・MLB1行です。その他海外リーグは確認済みの成績が追加され次第、ここに表示します。未入力値を0とみなしません。");
+info("現在の収録："+leagueList.map(l=>l+" "+rows.filter(r=>r.league===l).length+"行").join("／")+"。その他海外リーグは確認済みの成績が追加され次第ここに表示します。未入力値を0とみなしません。");
 const q=app.querySelector("#q"),league=app.querySelector("#league"),year=app.querySelector("#year"),count=app.querySelector("#count"),target=app.querySelector("#results");
 function render(){
 const text=q.value.normalize("NFKC").toLocaleLowerCase("ja");let x=rows.filter(r=>(r.name+" "+r.club).normalize("NFKC").toLocaleLowerCase("ja").includes(text)&&(!league.value||r.league===league.value)&&(!year.value||r.year===year.value)).sort(yearsAsc);
@@ -374,7 +374,7 @@ async function aboutPage(){
 const m=await load("meta");
 app.innerHTML=title("データの見方","公開データの対象・更新方法・未確認値の扱い")+
 `<section class="panel"><h2>収録範囲</h2><p>1996年度生まれ（1996年4月2日～1997年4月1日）のNPB所属経験者を中心に扱います。現在の公開選手は<strong>${e(m.counts.players)}人</strong>です。</p><p>NPB・国内独立・MLBの年度別成績はリーグ別に記録し、国際大会はWBC・プレミア12・オリンピックに限定しています。</p></section>`+
-`<section class="panel"><h2>NPB詳細成績・通算成績・ランキング</h2><p>現在、NPB一軍の年度成績549行について打席・打数・安打・長打率・出塁率・OPSなどの詳細項目を収録し、投手298年度行には奪三振・与四球・自責点・被安打・WHIPも収録しています。</p><p>通算打率は「安打÷打数」、長打率は「塁打÷打数」、防御率は「自責点×27÷投球アウト数」、WHIPは「（被安打＋与四球）×3÷投球アウト数」から算出します。通算出塁率・通算OPSは死球・犠飛などの分母に必要な値が未整備のため、未計算です。</p><p><a href="rankings.html">NPB年度別・通算ランキング</a>は1996年度生まれの収録選手内で比較します。公式のNPB全体順位とは異なり、率の集計は任意の最低打数・最低投球回による参考順位です。</p><p>完投・完封・対戦打者・盗塁刺・犠飛などの追加公式項目は調査中で、現時点では髙橋光成・岡本和真の確認済み年度分のみ掲載しています。</p></section>`+
+`<section class="panel"><h2>NPB詳細成績・通算成績・ランキング</h2><p>現在、NPB一軍の年度成績549行について打席・打数・安打・長打率・出塁率・OPSなどの詳細項目を収録し、投手298年度行には奪三振・与四球・自責点・被安打・WHIPも収録しています。</p><p>通算打率は「安打÷打数」、長打率は「塁打÷打数」、防御率は「自責点×27÷投球アウト数」、WHIPは「（被安打＋与四球）×3÷投球アウト数」から算出します。通算出塁率・通算OPSは死球・犠飛などの分母に必要な値が未整備のため、未計算です。</p><p><a href="rankings.html">NPB年度別・通算ランキング</a>は1996年度生まれの収録選手内で比較します。公式のNPB全体順位とは異なり、率の集計は任意の最低打数・最低投球回による参考順位です。</p><p>NPB公式ページにある完投・完封・対戦打者・盗塁刺・犠飛などの追加項目を、NPB一軍年度成績がある96人の打撃549行・投手298行について収録しました。一軍成績のない26人には、追加記録を無理に補完していません。</p></section>`+
 `<section class="panel"><h2>欠測・照合上の注意</h2><p>空欄は取得できていない値や該当しない値を表します。ゼロと同一視しません。国内独立リーグには照合が未完了の数値があり、留保注記を付けます。</p><p>投球回は3アウトを1回として「140 1/3」などの帯分数で表示します。現況所属は確認日現在のものです。</p></section>`+
 `<section class="panel"><h2>公開用スナップショット</h2><p>このページのデータ基準日：<strong>${e(m.built)}</strong>。Googleスプレッドシートの一部公開用列からJSONを生成しており、元スプレッドシートを丸ごと一般公開していません。元表を更新してもサイトには自動反映しません。</p><ul>${Object.entries(m.counts).map(([k,v])=>`<li>${e(k)}：${e(v)}件</li>`).join("")}</ul></section>`+
 ``;
