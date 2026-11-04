@@ -19,7 +19,7 @@ function statCells(s){return [d(s.year),d(s.league),d(s.club),d(s.games),d(s.avg
 const MAIN_TITLE_ORDER=["MVP","沢村賞","長嶋賞","最多勝","最優秀防御率","最多奪三振","最高勝率","首位打者","本塁打王","打点王","最多安打","最高出塁率","盗塁王","GG","B9","新人王"];
 function mainTitleName(item){
   if(!["セ・リーグ","パ・リーグ","NPB"].includes(String(item.league||"")))return null;
-  const name=String(item.award||"").replace(/\\s+/g,"");
+  const name=String(item.award||"").replace(/\s+/g,"");
   if(/長嶋(?:茂雄)?賞/.test(name))return "長嶋賞";
   if(/沢村(?:栄治)?賞/.test(name))return "沢村賞";
   if(/最優秀選手賞|年間MVP|シーズンMVP/.test(name))return "MVP";
@@ -44,7 +44,7 @@ function summarizeTitles(entries){
   const by=new Map();
   for(const item of entries){
     const k=mainTitleName(item);
-    if(!k||!/^\\d{4}$/.test(String(item.year)))continue;
+    if(!k||!/^\d{4}$/.test(String(item.year)))continue;
     if(!by.has(k))by.set(k,new Set());
     by.get(k).add(Number(item.year));
   }
