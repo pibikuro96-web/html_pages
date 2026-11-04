@@ -97,7 +97,7 @@ app.innerHTML=title("データの見方","公開データの対象・更新方�
 `<section class="panel"><h2>収録範囲</h2><p>1996年度生まれ（1996年4月2日～1997年4月1日）のNPB所属経験者を中心に扱います。現在の公開選手は<strong>${e(m.counts.players)}人</strong>です。</p><p>NPB・国内独立・MLBの年度別成績はリーグ別に記録し、国際大会はWBC・プレミア12・オリンピックに限定しています。</p></section>`+
 `<section class="panel"><h2>欠測・照合上の注意</h2><p>空欄は取得できていない値や該当しない値を表します。ゼロと同一視しません。国内独立リーグには照合が未完了の数値があり、留保注記を付けます。</p><p>投球回は3アウトを1回として「140 1/3」などの帯分数で表示します。現況所属は確認日現在のものです。</p></section>`+
 `<section class="panel"><h2>公開用スナップショット</h2><p>このページのデータ基準日：<strong>${e(m.built)}</strong>。Googleスプレッドシートの一部公開用列からJSONを生成しており、元スプレッドシートを丸ごと一般公開していません。元表を更新してもサイトには自動反映しません。</p><ul>${Object.entries(m.counts).map(([k,v])=>`<li>${e(k)}：${e(v)}件</li>`).join("")}</ul></section>`+
-`<section class="panel"><h2>既存ページについて</h2><p>旧選手詳細ページ、旧一覧、旧HTMLは削除・上書きしていません。新サイトは別フォルダで追加したものです。</p><p><a href="../main.html">PB96ホームへ戻る</a></p></section>`;
+``;
 }
 async function init(){
 try{if(page==="index")await listPage();else if(page==="player")await profilePage();else if(page==="seasons")await seasonPage();else if(page==="compare")await comparePage();else if(page==="international")await internationalPage();else if(page==="about")await aboutPage();else app.textContent="不明なページです。";}
