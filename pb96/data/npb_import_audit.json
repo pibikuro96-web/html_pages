@@ -2,11 +2,11 @@
   "date": "2026-11-04",
   "profilesInMaster": 122,
   "profilesWithOfficialURL": 97,
-  "attempted": 3,
-  "reported": 3,
-  "successful": 3,
-  "newlyValidated": 57,
-  "totalSupplementRows": 57,
+  "attempted": 97,
+  "reported": 97,
+  "successful": 96,
+  "newlyValidated": 844,
+  "totalSupplementRows": 843,
   "results": [
     {
       "id": "001",
@@ -34,6 +34,856 @@
       "validated": 22,
       "issues": {},
       "url": "https://npb.jp/bis/players/61665130.html"
+    },
+    {
+      "id": "004",
+      "name": "安樂智大",
+      "status": "ok",
+      "parsed": 18,
+      "validated": 18,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/71175130.html"
+    },
+    {
+      "id": "005",
+      "name": "小野郁",
+      "status": "ok",
+      "parsed": 24,
+      "validated": 24,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/51555130.html"
+    },
+    {
+      "id": "006",
+      "name": "清水優心",
+      "status": "ok",
+      "parsed": 11,
+      "validated": 11,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/61965130.html"
+    },
+    {
+      "id": "007",
+      "name": "宗佑磨",
+      "status": "ok",
+      "parsed": 11,
+      "validated": 11,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/11815130.html"
+    },
+    {
+      "id": "008",
+      "name": "栗原陵矢",
+      "status": "ok",
+      "parsed": 10,
+      "validated": 10,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01705130.html"
+    },
+    {
+      "id": "010",
+      "name": "佐野皓大",
+      "status": "ok",
+      "parsed": 7,
+      "validated": 7,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/91995130.html"
+    },
+    {
+      "id": "011",
+      "name": "淺間大基",
+      "status": "ok",
+      "parsed": 12,
+      "validated": 12,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/31135130.html"
+    },
+    {
+      "id": "012",
+      "name": "塹江敦哉",
+      "status": "ok",
+      "parsed": 18,
+      "validated": 18,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/21625130.html"
+    },
+    {
+      "id": "013",
+      "name": "岩下大輝",
+      "status": "ok",
+      "parsed": 14,
+      "validated": 14,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/91395130.html"
+    },
+    {
+      "id": "015",
+      "name": "藤井皓哉",
+      "status": "ok",
+      "parsed": 14,
+      "validated": 14,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/51655130.html"
+    },
+    {
+      "id": "016",
+      "name": "石川直也",
+      "status": "ok",
+      "parsed": 12,
+      "validated": 12,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/61165130.html"
+    },
+    {
+      "id": "017",
+      "name": "笠谷俊介",
+      "status": "ok",
+      "parsed": 14,
+      "validated": 14,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01505130.html"
+    },
+    {
+      "id": "018",
+      "name": "齋藤綱記",
+      "status": "ok",
+      "parsed": 22,
+      "validated": 21,
+      "issues": {
+        "existing_mismatch": 1
+      },
+      "url": "https://npb.jp/bis/players/11915130.html"
+    },
+    {
+      "id": "019",
+      "name": "植田海",
+      "status": "ok",
+      "parsed": 11,
+      "validated": 11,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01305130.html"
+    },
+    {
+      "id": "020",
+      "name": "桒原樹",
+      "status": "ok",
+      "parsed": 1,
+      "validated": 1,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/21725130.html"
+    },
+    {
+      "id": "021",
+      "name": "香月一也",
+      "status": "ok",
+      "parsed": 6,
+      "validated": 6,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/21525130.html"
+    },
+    {
+      "id": "022",
+      "name": "山田遥楓",
+      "status": "ok",
+      "parsed": 7,
+      "validated": 7,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/13115130.html"
+    },
+    {
+      "id": "023",
+      "name": "百瀬大騎",
+      "status": "ok",
+      "parsed": 2,
+      "validated": 2,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/31835130.html"
+    },
+    {
+      "id": "024",
+      "name": "立田将太",
+      "status": "ok",
+      "parsed": 2,
+      "validated": 2,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/61065130.html"
+    },
+    {
+      "id": "025",
+      "name": "髙濱祐仁",
+      "status": "ok",
+      "parsed": 5,
+      "validated": 5,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01005130.html"
+    },
+    {
+      "id": "028",
+      "name": "飯塚悟史",
+      "status": "ok",
+      "parsed": 6,
+      "validated": 6,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01105130.html"
+    },
+    {
+      "id": "029",
+      "name": "太田賢吾",
+      "status": "ok",
+      "parsed": 9,
+      "validated": 9,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/81385130.html"
+    },
+    {
+      "id": "030",
+      "name": "鈴木優",
+      "status": "ok",
+      "parsed": 10,
+      "validated": 10,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/81985130.html"
+    },
+    {
+      "id": "032",
+      "name": "八百板卓丸",
+      "status": "ok",
+      "parsed": 3,
+      "validated": 3,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/71875130.html"
+    },
+    {
+      "id": "034",
+      "name": "戸川大輔",
+      "status": "ok",
+      "parsed": 4,
+      "validated": 4,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01205130.html"
+    },
+    {
+      "id": "046",
+      "name": "西口直人",
+      "status": "ok",
+      "parsed": 12,
+      "validated": 12,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/41445134.html"
+    },
+    {
+      "id": "048",
+      "name": "ライデル・マルティネス",
+      "status": "ok",
+      "parsed": 18,
+      "validated": 18,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/23925134.html"
+    },
+    {
+      "id": "049",
+      "name": "田嶋大樹",
+      "status": "ok",
+      "parsed": 18,
+      "validated": 18,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/41045136.html"
+    },
+    {
+      "id": "050",
+      "name": "鈴木博志",
+      "status": "ok",
+      "parsed": 18,
+      "validated": 18,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/61965136.html"
+    },
+    {
+      "id": "051",
+      "name": "岸田行倫",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/91595136.html"
+    },
+    {
+      "id": "052",
+      "name": "宮本秀明",
+      "status": "ok",
+      "parsed": 5,
+      "validated": 5,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/91895136.html"
+    },
+    {
+      "id": "053",
+      "name": "アリエル・マルティネス",
+      "status": "ok",
+      "parsed": 7,
+      "validated": 7,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/73975136.html"
+    },
+    {
+      "id": "054",
+      "name": "松本航",
+      "status": "ok",
+      "parsed": 16,
+      "validated": 16,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/81685138.html"
+    },
+    {
+      "id": "055",
+      "name": "辰己涼介",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/11015138.html"
+    },
+    {
+      "id": "056",
+      "name": "上茶谷大河",
+      "status": "ok",
+      "parsed": 16,
+      "validated": 16,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/81585138.html"
+    },
+    {
+      "id": "057",
+      "name": "髙橋優貴",
+      "status": "ok",
+      "parsed": 10,
+      "validated": 10,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/61965138.html"
+    },
+    {
+      "id": "058",
+      "name": "甲斐野央",
+      "status": "ok",
+      "parsed": 14,
+      "validated": 14,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/51555138.html"
+    },
+    {
+      "id": "059",
+      "name": "清水昇",
+      "status": "ok",
+      "parsed": 16,
+      "validated": 16,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/51955138.html"
+    },
+    {
+      "id": "060",
+      "name": "太田光",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/71375138.html"
+    },
+    {
+      "id": "061",
+      "name": "東妻勇輔",
+      "status": "ok",
+      "parsed": 16,
+      "validated": 16,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/31135138.html"
+    },
+    {
+      "id": "062",
+      "name": "梅津晃大",
+      "status": "ok",
+      "parsed": 10,
+      "validated": 10,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/81185138.html"
+    },
+    {
+      "id": "063",
+      "name": "頓宮裕真",
+      "status": "ok",
+      "parsed": 7,
+      "validated": 7,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/81085138.html"
+    },
+    {
+      "id": "064",
+      "name": "伊藤裕季也",
+      "status": "ok",
+      "parsed": 9,
+      "validated": 8,
+      "issues": {
+        "existing_mismatch": 1
+      },
+      "url": "https://npb.jp/bis/players/41145138.html"
+    },
+    {
+      "id": "065",
+      "name": "中山翔太",
+      "status": "ok",
+      "parsed": 3,
+      "validated": 3,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/21225138.html"
+    },
+    {
+      "id": "066",
+      "name": "島内颯太郎",
+      "status": "ok",
+      "parsed": 16,
+      "validated": 16,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/31935138.html"
+    },
+    {
+      "id": "067",
+      "name": "小島和哉",
+      "status": "ok",
+      "parsed": 16,
+      "validated": 16,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/11515138.html"
+    },
+    {
+      "id": "068",
+      "name": "粟津凱士",
+      "status": "ok",
+      "parsed": 2,
+      "validated": 2,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/71175138.html"
+    },
+    {
+      "id": "069",
+      "name": "中村稔弥",
+      "status": "ok",
+      "parsed": 16,
+      "validated": 16,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01205138.html"
+    },
+    {
+      "id": "070",
+      "name": "渡邊佳明",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/73175138.html"
+    },
+    {
+      "id": "071",
+      "name": "滝野要",
+      "status": "ok",
+      "parsed": 3,
+      "validated": 3,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/81985138.html"
+    },
+    {
+      "id": "072",
+      "name": "泉圭輔",
+      "status": "ok",
+      "parsed": 16,
+      "validated": 16,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01105138.html"
+    },
+    {
+      "id": "073",
+      "name": "正隨優弥",
+      "status": "ok",
+      "parsed": 3,
+      "validated": 3,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/71975138.html"
+    },
+    {
+      "id": "074",
+      "name": "佐藤龍世",
+      "status": "ok",
+      "parsed": 7,
+      "validated": 6,
+      "issues": {
+        "existing_mismatch": 1
+      },
+      "url": "https://npb.jp/bis/players/81785138.html"
+    },
+    {
+      "id": "075",
+      "name": "久保拓眞",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/71775138.html"
+    },
+    {
+      "id": "076",
+      "name": "福田俊",
+      "status": "ok",
+      "parsed": 10,
+      "validated": 10,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/11615138.html"
+    },
+    {
+      "id": "077",
+      "name": "中川圭太",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/51255138.html"
+    },
+    {
+      "id": "078",
+      "name": "小郷裕哉",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/81385138.html"
+    },
+    {
+      "id": "079",
+      "name": "鈴木翔天",
+      "status": "ok",
+      "parsed": 14,
+      "validated": 14,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01905138.html"
+    },
+    {
+      "id": "080",
+      "name": "漆原大晟",
+      "status": "ok",
+      "parsed": 10,
+      "validated": 10,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/11315138.html"
+    },
+    {
+      "id": "083",
+      "name": "大盛穂",
+      "status": "ok",
+      "parsed": 7,
+      "validated": 7,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/21325138.html"
+    },
+    {
+      "id": "086",
+      "name": "中熊大智",
+      "status": "ok",
+      "parsed": 1,
+      "validated": 1,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/71275138.html"
+    },
+    {
+      "id": "089",
+      "name": "岸潤一郎",
+      "status": "ok",
+      "parsed": 7,
+      "validated": 7,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/51955151.html"
+    },
+    {
+      "id": "090",
+      "name": "平間隼人",
+      "status": "ok",
+      "parsed": 1,
+      "validated": 1,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/31635151.html"
+    },
+    {
+      "id": "091",
+      "name": "ジャリエル・ロドリゲス",
+      "status": "ok",
+      "parsed": 6,
+      "validated": 6,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/33935151.html"
+    },
+    {
+      "id": "092",
+      "name": "栗林良吏",
+      "status": "ok",
+      "parsed": 12,
+      "validated": 12,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/91995153.html"
+    },
+    {
+      "id": "093",
+      "name": "佐々木健",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01005153.html"
+    },
+    {
+      "id": "094",
+      "name": "伊藤将司",
+      "status": "ok",
+      "parsed": 12,
+      "validated": 12,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/71375153.html"
+    },
+    {
+      "id": "095",
+      "name": "藤井聖",
+      "status": "ok",
+      "parsed": 10,
+      "validated": 10,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/71875153.html"
+    },
+    {
+      "id": "096",
+      "name": "伊藤優輔",
+      "status": "ok",
+      "parsed": 6,
+      "validated": 6,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/91395153.html"
+    },
+    {
+      "id": "097",
+      "name": "今川優馬",
+      "status": "ok",
+      "parsed": 6,
+      "validated": 6,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/21325153.html"
+    },
+    {
+      "id": "098",
+      "name": "中野拓夢",
+      "status": "ok",
+      "parsed": 6,
+      "validated": 6,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/41445153.html"
+    },
+    {
+      "id": "099",
+      "name": "ルーク・ワカマツ",
+      "status": "ok",
+      "parsed": 1,
+      "validated": 1,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/63965153.html"
+    },
+    {
+      "id": "101",
+      "name": "野村勇",
+      "status": "ok",
+      "parsed": 5,
+      "validated": 5,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/11615155.html"
+    },
+    {
+      "id": "102",
+      "name": "末包昇大",
+      "status": "ok",
+      "parsed": 5,
+      "validated": 5,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/51055155.html"
+    },
+    {
+      "id": "103",
+      "name": "吉川雄大",
+      "status": "ok",
+      "parsed": 4,
+      "validated": 4,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/23525155.html"
+    },
+    {
+      "id": "104",
+      "name": "上川畑大悟",
+      "status": "ok",
+      "parsed": 5,
+      "validated": 5,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/01505155.html"
+    },
+    {
+      "id": "105",
+      "name": "ボー・タカハシ",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/43045155.html"
+    },
+    {
+      "id": "106",
+      "name": "船迫大雅",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/31835157.html"
+    },
+    {
+      "id": "107",
+      "name": "宮内春輝",
+      "status": "ok",
+      "parsed": 4,
+      "validated": 4,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/53155157.html"
+    },
+    {
+      "id": "108",
+      "name": "福永裕基",
+      "status": "ok",
+      "parsed": 4,
+      "validated": 4,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/81685157.html"
+    },
+    {
+      "id": "109",
+      "name": "ウンベルト・メヒア",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/93295157.html"
+    },
+    {
+      "id": "110",
+      "name": "ダーウィンゾン・ヘルナンデス",
+      "status": "ok",
+      "parsed": 8,
+      "validated": 8,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/33435157.html"
+    },
+    {
+      "id": "111",
+      "name": "森田駿哉",
+      "status": "ok",
+      "parsed": 4,
+      "validated": 4,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/43345159.html"
+    },
+    {
+      "id": "112",
+      "name": "ジュニオール・フェルナンデス",
+      "status": "fetch_error",
+      "detail": "HTTP Error 404: Not Found",
+      "url": "https://npb.jp/bis/players/03905159.html"
+    },
+    {
+      "id": "113",
+      "name": "アニュラス・ザバラ",
+      "status": "ok",
+      "parsed": 4,
+      "validated": 4,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/93795159.html"
+    },
+    {
+      "id": "114",
+      "name": "ジェフリー・ヤン",
+      "status": "ok",
+      "parsed": 2,
+      "validated": 2,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/53055159.html"
+    },
+    {
+      "id": "115",
+      "name": "ホセ・エスパーダ",
+      "status": "ok",
+      "parsed": 2,
+      "validated": 2,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/23525159.html"
+    },
+    {
+      "id": "116",
+      "name": "アンドレ・ジャクソン",
+      "status": "ok",
+      "parsed": 6,
+      "validated": 6,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/43745159.html"
+    },
+    {
+      "id": "117",
+      "name": "ココ・モンテス",
+      "status": "ok",
+      "parsed": 1,
+      "validated": 1,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/23225159.html"
+    },
+    {
+      "id": "118",
+      "name": "スペンサー・ハワード",
+      "status": "ok",
+      "parsed": 4,
+      "validated": 4,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/23725150.html"
+    },
+    {
+      "id": "119",
+      "name": "ペドロ・アビラ",
+      "status": "ok",
+      "parsed": 2,
+      "validated": 2,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/73075150.html"
+    },
+    {
+      "id": "120",
+      "name": "オースティン・コックス",
+      "status": "ok",
+      "parsed": 2,
+      "validated": 2,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/83385152.html"
+    },
+    {
+      "id": "121",
+      "name": "ダウリ・モレッタ",
+      "status": "ok",
+      "parsed": 2,
+      "validated": 2,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/03705152.html"
+    },
+    {
+      "id": "122",
+      "name": "イーストン・ルーカス",
+      "status": "ok",
+      "parsed": 2,
+      "validated": 2,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/73975152.html"
     }
   ],
   "robotsBlocked": false
