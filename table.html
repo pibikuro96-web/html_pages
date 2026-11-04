@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Web用データ一覧</title>
+
+<style>
+body {
+  font-family: sans-serif;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+th {
+  background-color: #f5f5f5;
+  cursor: pointer;
+  user-select: none;
+}
+
+th.asc::after {
+  content: " ▲";
+}
+
+th.desc::after {
+  content: " ▼";
+}
+
+tr:nth-child(even) {
+  background-color: #fafafa;
+}
+</style>
+</head>
+
+<body>
+
+<h2>データ一覧</h2>
+
+<table id="data-table"></table>
+
+<script>
+const csvUrl =
+  "https://docs.google.com/spreadsheets/d/1LE6-3Ll1S9FbZNrEKEGnrKgJ9KxC9keJTFbxnQQUiO4/gviz/tq?tqx=out:csv&sheet=Web用&range=A1:P125";
+
+let tableData = [];
+let headers = [];
+let sortState = {};
+
+fetch(csvUrl)
+  .then(response => response.text())
+  .then(text => {
+    const rows = text.trim().split("\n").map(row =>
+      row.split(",").map(cell =>
+        cell.replace(/^"|"$/g, "")
+      )
+    );
+
+    headers = rows.shift();
+    tableData = rows;
+
+    renderTable(headers, tableData);
+  });
+
+function renderTable(headers, rows) {
+  const table = document.getElementById("data-table");
+  table.innerHTML = "";
+
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+
+  headers.forEach((header, index) => {
+    const th = document.createElement("th");
+    th.textContent = header;
+
+    if (sortState[index]) {
+      th.classList.add(sortState[index]);
+    }
+
+    th.onclick = () => sortBy(index);
+    headRow.appendChild(th);
+  });
+
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+
+  rows.forEach(row => {
+    const tr = document.createElement("tr");
+    row.forEach(cell => {
+      const td = document.createElement("td");
+      td.textContent = cell;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+}
+
+function sortBy(index) {
+  const direction = sortState[index] === "asc" ? "desc" : "asc";
+  sortState = { [index]: direction };
+
+  tableData.sort((a, b) => {
+    const x = a[index];
+    const y = b[index];
+
+    const nx = Number(x);
+    const ny = Number(y);
+
+    if (!isNaN(nx) && !isNaN(ny)) {
+      return direction === "asc" ? nx - ny : ny - nx;
+    }
+
+    return direction === "asc"
+      ? x.localeCompare(y, "ja")
+      : y.localeCompare(x, "ja");
+  });
+
+  renderTable(headers, tableData);
+}
+</script>
+
+</body>
+</html>

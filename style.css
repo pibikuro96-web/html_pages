@@ -1,0 +1,76 @@
+/* 全体のスタイル */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ccffdd;
+    color: black; /* 文字色を黒で統一 */
+    padding: 20px;
+}
+
+/* 表のスタイル */
+.player-table {
+    max-width: 240px;
+    min-width: 100px;
+    border-collapse: collapse;
+    background-color: white;
+    table-layout: fixed; /* 列幅を均等にする */
+}
+
+.player-table th, .player-table td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: center;
+    white-space: normal;
+}
+
+/* 表全体の枠線 */
+table {
+    max-width: 600px;
+    width: 100%;
+    border-collapse: collapse; /* 罫線を一体化 */
+}
+
+/* ヘッダーとセルの枠線 */
+th, td {
+    border: 1px solid black; /* 黒い罫線 */
+    padding: 8px; /* 余白 */
+    text-align: left; /* 左寄せ */
+}
+
+
+/* タイトル行のデザイン */
+.player-table th {
+    background-color: #333;
+    color: white;
+    width: 20%; 
+    max-width: 240px;/* 2列の表で均等にする */
+}
+
+
+/* 球団カラー */
+.team-giants { background-color: #FF6600; }
+.team-swallows { background-color: #99CC00; }
+.team-baystars { background-color: #00CCFF; }
+.team-dragons { background-color: #0000FF; }
+.team-tigers { background-color: #FFFF00; }
+.team-carp { background-color: #FF0000; }
+.team-fighters { background-color: #FFCC99; }
+.team-eagles { background-color: #CC0000; }
+.team-marines { background-color: #DDDDDD; }
+.team-lions { background-color: #0066CC; }
+.team-buffaloes { background-color: #9900CC; }
+.team-hawks { background-color: #FFCC00; }
+.team-niigata { background-color: #FFFF99; }
+.team-shizuoka { background-color: #CCCCFF; }
+/* 退団選手の背景色（グレー） */
+.former-team { background-color: #888888; color: black; }
+
+
+/* リンクスタイル */
+a {
+    color: blue;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
