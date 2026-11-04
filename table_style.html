@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>選手一覧（26/2/1時点）</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ccffdd;
+    color: black;
+    padding: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+}
+
+th, td {
+    border: 1px solid #cccccc;
+    padding: 6px 8px;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+th {
+    background-color: #f2f2f2;
+    cursor: pointer;
+    user-select: none;
+}
+
+th:hover {
+    background-color: #e6e6e6;
+}
+
+.sort-icon {
+    margin-left: 4px;
+    font-size: 0.8em;
+    color: #666666;
+}
+
+th.sorted-asc .sort-icon,
+th.sorted-desc .sort-icon {
+    color: black;
+}
+
+a {
+    color: blue;
+    text-decoration: none;
+}
+
+.team-giants { background-color: #FF6600; }
+.team-swallows { background-color: #99CC00; }
+.team-baystars { background-color: #00CCFF; }
+.team-dragons { background-color: #0000FF; }
+.team-tigers { background-color: #FFFF00; }
+.team-carp { background-color: #FF0000; }
+.team-fighters { background-color: #FFCC99; }
+.team-eagles { background-color: #CC0000; }
+.team-marines { background-color: #DDDDDD; }
+.team-lions { background-color: #0066CC; }
+.team-buffaloes { background-color: #9900CC; }
+.team-hawks { background-color: #FFCC00; }
+.team-niigata { background-color: #FFFF99; }
+.team-shizuoka { background-color: #CCCCFF; }
+
+.major-team {
+    background-color: #888888;
+    color: black;
+}
+
+.no-color {
+    background-color: #ffffff;
+}
+
+tr.no-color td {
+    background-color: #ffffff !important;
+}
+
+
+tbody td:nth-child(13),
+tbody td:nth-child(14) {
+    background-color: #ffffff !important;
+}
+</style>
+</head>
+
+<body>
+
+<h2>選手一覧（26/2/1時点）</h2>
+
+<table id="data-table"></table>
+
+<script>
+const csvUrl =
+"https://docs.google.com/spreadsheets/d/1LE6-3Ll1S9FbZNrEKEGnrKgJ9KxC9keJTFbxnQQUiO4/gviz/tq?tqx=out:csv&sheet=Web用&range=A1:N125";
+
+let headers = [];
+let tableData = [];
+let sortState = {};
+
+const teamClassMap = {
+    "読売ジャイアンツ": "team-giants",
+    "東京ヤクルトスワローズ": "team-swallows",
+    "横浜DeNAベイスターズ": "team-baystars",
+    "中日ドラゴンズ": "team-dragons",
+    "阪神タイガース": "team-tigers",
+    "広島東洋カープ": "team-carp",
+    "北海道日本ハムファイターズ": "team-fighters",
+    "東北楽天ゴールデンイーグルス": "team-eagles",
+    "千葉ロッテマリーンズ": "team-marines",
+    "埼玉西武ライオンズ": "team-lions",
+    "オリックス・バファローズ": "team-buffaloes",
+    "福岡ソフトバンクホークス": "team-hawks",
+    "オイシックス新潟アルビレックスBC": "team-niigata",
+    "ハヤテベンチャーズ静岡": "team-shizuoka"
+};
+
+fetch(csvUrl)
+.then(r => r.text())
+.then(text => {
+    const rows = text.trim().split("\n").map(r =>
+        r.split(",").map(c => c.replace(/^"|"$/g, ""))
+    );
+    headers = rows.shift();
+    tableData = rows;
+    renderTable();
+});
+
+function renderTable() {
+    const table = document.getElementById("data-table");
+    table.innerHTML = "";
+
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+
+    headers.forEach((h, i) => {
+        const th = document.createElement("th");
+        th.textContent = h;
+
+        const span = document.createElement("span");
+        span.className = "sort-icon";
+        span.textContent = sortState[i] === "asc" ? " ▲" :
+                           sortState[i] === "desc" ? " ▼" : " ⇅";
+        th.appendChild(span);
+
+        if (sortState[i]) th.classList.add("sorted-" + sortState[i]);
+        th.onclick = () => sortBy(i);
+
+        headRow.appendChild(th);
+    });
+
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+
+    tableData.forEach(row => {
+        const tr = document.createElement("tr");
+
+        const team = String(row[1] ?? "");   // B列：所属
+        const name = String(row[2] ?? "");   // C列：選手名
+
+        if (team.includes("元")) {
+            tr.classList.add("no-color");
+        } else if (!teamClassMap[team]) {
+            tr.classList.add("major-team");
+        } else {
+            tr.classList.add(teamClassMap[team]);
+        }
+
+        row.forEach(cell => {
+            const td = document.createElement("td");
+            if (cell.startsWith("http")) {
+                const a = document.createElement("a");
+                a.href = cell;
+                a.textContent = cell;
+                a.target = "_blank";
+                td.appendChild(a);
+            } else {
+                td.textContent = cell;
+            }
+            tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+}
+
+function sortBy(index) {
+    const dir = sortState[index] === "asc" ? "desc" : "asc";
+    sortState = { [index]: dir };
+
+    tableData.sort((a, b) => {
+        const x = a[index];
+        const y = b[index];
+        const nx = Number(x);
+        const ny = Number(y);
+
+        if (!isNaN(nx) && !isNaN(ny)) {
+            return dir === "asc" ? nx - ny : ny - nx;
+        }
+        return dir === "asc"
+            ? x.localeCompare(y, "ja")
+            : y.localeCompare(x, "ja");
+    });
+
+    renderTable();
+}
+</script>
+
+
+</body>
+</html>
+
+

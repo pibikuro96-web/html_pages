@@ -1,0 +1,114 @@
+/* 共通のスタイル */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ccffdd;
+    color: black;
+    padding: 10px;
+}
+
+/* 見出しのデザイン（灰背景＋白文字） */
+h2.section-title {
+    max-width: 240px;
+    background-color: #444;
+    color: white;
+    padding: 1px;
+    text-align: center;
+    border-radius: 100px;
+}
+
+/* 表の基本スタイル */
+.profile-table {
+    border-collapse: collapse;
+    background-color: white;
+    margin: left;
+}
+
+.profile-table th, .profile-table td {
+    border: 1px solid #000;
+    padding: 5px;
+    text-align: center;
+    white-space: normal;
+    color: black; /* 文字色は常に黒 */
+}
+
+/* 列ごとの幅設定 */
+.profile-table th, .profile-table td {
+    min-width: 100px; /* 各列の最小幅 */
+    white-space: nowrap; /* 改行を防ぐ */
+}
+
+/* タイトル行のデザイン */
+.profile-table th {
+    background-color: #333;
+    color: white;
+}
+
+/* 所属名の色分け */
+.profile-table.basic-info tr:nth-child(-n+6) td {
+    background-color: var(--team-color, transparent);
+}
+
+/* 球団背番号変遷の各行の背景色を所属チームに合わせる */
+.profile-table.number-history tr td {
+    background-color: var(--team-color, transparent);
+}
+.profile-table.position-change tr td {
+    background-color: var(--team-color, transparent);
+}
+.profile-table.bat-change tr td {
+    background-color: var(--team-color, transparent);
+}
+
+/* 背番号を強調 */
+.highlight-number {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+/* 球団カラーの定義 */
+:root {
+    --team-giants: #FF6600;
+    --team-swallows: #99CC00;
+    --team-baystars: #00CCFF;
+    --team-dragons: #0000FF;
+    --team-tigers: #FFFF00;
+    --team-carp: #FF0000;
+    --team-fighters: #FFCC99;
+    --team-eagles: #CC0000;
+    --team-marines: #DDDDDD;
+    --team-lions: #0066CC;
+    --team-buffaloes: #9900CC;
+    --team-hawks: #FFCC00;
+    --team-niigata: #FFFF99;
+    --team-shizuoka: #CCCCFF;
+    --team-pitcher: #FF0000; 
+    --team-catcher: #0000FF;
+    --team-infielder: #ffff00;
+    --team-outfielder: #00FF00;
+    --team-right: #FF8080; 
+    --team-left: #0080FF;
+    --team-switch: #00FF0A;
+}
+
+/* 球団ごとのクラス */
+.team-giants { --team-color: var(--team-giants); }
+.team-swallows { --team-color: var(--team-swallows); }
+.team-baystars { --team-color: var(--team-baystars); }
+.team-dragons { --team-color: var(--team-dragons); }
+.team-tigers { --team-color: var(--team-tigers); }
+.team-carp { --team-color: var(--team-carp); }
+.team-fighters { --team-color: var(--team-fighters); }
+.team-eagles { --team-color: var(--team-eagles); }
+.team-marines { --team-color: var(--team-marines); }
+.team-lions { --team-color: var(--team-lions); }
+.team-buffaloes { --team-color: var(--team-buffaloes); }
+.team-hawks { --team-color: var(--team-hawks); }
+.team-niigata { --team-color: var(--team-niigata); }
+.team-shizuoka { --team-color: var(--team-shizuoka); }
+.team-pitcher { --team-color: var(--team-pitcher); } 
+.team-catcher { --team-color: var(--team-catcher); } 
+.team-infielder { --team-color: var(--team-infielder); }
+.team-outfielder { --team-color: var(--team-outfielder); }
+.team-right { --team-color: var(--team-right); }
+.team-left { --team-color: var(--team-left); }
+.team-switch { --team-color: var(--team-switch); }
