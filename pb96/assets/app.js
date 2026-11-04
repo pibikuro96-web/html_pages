@@ -104,8 +104,8 @@ info("各行の確認区分・出典をご確認ください。投球回は投�
 const q=app.querySelector("#q"),league=app.querySelector("#league"),year=app.querySelector("#year"),count=app.querySelector("#count"),target=app.querySelector("#results");
 function render(){
 const text=q.value.normalize("NFKC").toLocaleLowerCase("ja");let x=rows.filter(r=>(r.name+" "+r.club).normalize("NFKC").toLocaleLowerCase("ja").includes(text)&&(!league.value||r.league===league.value)&&(!year.value||r.year===year.value)).sort(yearsAsc);
-count.textContent=`${x.length}件（最大300件を表示）／全${rows.length}件`;
-target.innerHTML=table(["選手",...seasonCols],x.slice(0,300).map(s=>[`<a href="player.html?id=${encodeURIComponent(s.id)}">${e(s.name)}</a>`,...statCells(s)]));
+count.textContent=`${x.length}件／全${rows.length}件`;
+target.innerHTML=table(["選手",...seasonCols],x.map(s=>[`<a href="player.html?id=${encodeURIComponent(s.id)}">${e(s.name)}</a>`,...statCells(s)]));
 }
 for(const n of [q,league,year])n.addEventListener(n===q?"input":"change",render);render();
 }
