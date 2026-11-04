@@ -10,3 +10,36 @@
 .leaders-table td:nth-child(1),.leaders-table td:nth-child(4){font-variant-numeric:tabular-nums}
 .total-row td{background:#e9f2fa!important;font-weight:700}
 @media(max-width:760px){.player-list th{font-size:.79rem}.player-list tbody td:nth-child(5){max-width:185px}}
+
+
+/* NPB年度成績は基本値と公式補足値を同じ打撃／投手表に表示 */
+.npb-detail .table-outer{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.npb-detail table{font-size:.8rem}
+.npb-detail th,.npb-detail td{padding:7px 8px}
+.npb-detail tbody tr:last-child td{background:#e9f2fa;font-weight:700}
+
+/* 国際大会の資料リンクと備考の文字サイズを統一。長文は折り返す */
+.international-detail table{font-size:.82rem;min-width:760px}
+.international-detail th,.international-detail td{font-size:.82rem;line-height:1.5;vertical-align:top}
+.international-detail td:nth-child(7) a{font-size:.82rem;font-weight:500;white-space:nowrap}
+.international-detail td:nth-child(8){min-width:210px;max-width:350px;white-space:normal;overflow-wrap:anywhere}
+.international-detail .table-outer{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+/* ランキングは4列に集約して幅を抑え、順位は選手名の前に表示 */
+.leaders-table{max-width:760px;width:100%}
+.leaders-table table{width:100%;min-width:0;table-layout:fixed;font-size:.83rem}
+.leaders-table th,.leaders-table td{padding:8px 9px;vertical-align:middle}
+.leaders-table th:nth-child(1),.leaders-table td:nth-child(1){width:34%;white-space:normal;overflow-wrap:anywhere}
+.leaders-table th:nth-child(2),.leaders-table td:nth-child(2){width:27%;white-space:normal;overflow-wrap:anywhere}
+.leaders-table th:nth-child(3),.leaders-table td:nth-child(3){width:15%;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.leaders-table th:nth-child(4),.leaders-table td:nth-child(4){width:24%;white-space:normal;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.leaders-table .rank-number{display:inline-block;min-width:2em;color:#45647c;font-weight:700;font-variant-numeric:tabular-nums}
+@media(max-width:560px){
+  .leaders-table table{font-size:.76rem}
+  .leaders-table th,.leaders-table td{padding:7px 5px}
+  .leaders-table th:nth-child(1),.leaders-table td:nth-child(1){width:38%}
+  .leaders-table th:nth-child(2),.leaders-table td:nth-child(2){width:23%}
+  .leaders-table th:nth-child(3),.leaders-table td:nth-child(3){width:16%}
+  .leaders-table th:nth-child(4),.leaders-table td:nth-child(4){width:23%}
+  .leaders-table .rank-number{min-width:1.8em}
+}

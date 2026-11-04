@@ -185,72 +185,54 @@ for(const n of [q,pos,sort])n.addEventListener(n===q?"input":"change",render);
 render();
 }
 
+function sumSupplement(rows,kind,key){
+ const vals=rows.map(r=>numeric(r[kind]?.[key]));
+ return vals.length&&vals.every(v=>v!==null)?vals.reduce((sum,v)=>sum+v,0):null;
+}
 function npbDetailView(records){
  if(!records.length)return "";
  const list=[...records].sort((a,b)=>Number(a.season.year)-Number(b.season.year)||
-    String(a.season.club).localeCompare(String(b.season.club),"ja"));
- const t=sumNPB(list);
- function bt(r){
-   const a=r.season,x=r.detail||{};
-   return [d(a.year),d(a.club),d(a.games),d(x.pa),d(x.ab),d(x.hits),
-     d(x.doubles),d(x.triples),d(a.hr),d(x.runs),d(a.rbi),d(a.sb),
-     d(x.walks),d(x.strikeoutsBat),d(a.avg),d(x.obp),d(x.slg),d(x.ops)];
- }
- function pt(r){
-   const a=r.season,x=r.detail||{};
-   return [d(a.year),d(a.club),d(a.pitchGames),d(a.innings),d(a.wins),d(a.losses),
-     d(a.hp),d(a.saves),d(x.strikeoutsPitch),d(x.walksPitch),
-     d(x.hitsAllowed),d(x.earnedRuns),d(a.era),d(x.whip)];
- }
- const totalBat=["<strong>通算</strong>","—",d(t.battingGames),d(t.plateAppearances),
- d(t.atBats),d(t.hits),d(t.doubles),d(t.triples),d(t.homeRuns),d(t.runs),
- d(t.rbi),d(t.sb),d(t.walks),d(t.battingStrikeouts),ratioLabel(t.avg),
- ratioLabel(t.obp),ratioLabel(t.slg),ratioLabel(t.ops)].map(x=>x);
- const totalPitch=["<strong>通算</strong>","—",d(t.pitcherGames),inningsLabel(t.outs),
- d(t.wins),d(t.losses),d(t.hp),d(t.saves),d(t.pitchingStrikeouts),
- d(t.pitchingWalks),d(t.hitsAllowed),d(t.earnedRuns),ratioLabel(t.era,2),ratioLabel(t.whip)];
- const bat=list.filter(x=>x.detail&&(numeric(x.detail.pa)??0)>0 || (numeric(x.season.games)??0)>0);
- const pit=list.filter(x=>numeric(x.season.pitchGames)>0);
- let html='<section class="panel"><h2>NPB詳細年度成績・通算成績</h2>'+
-   '<p class="small muted">NPB一軍のみの集計です。球団別の年度データを通算では合計し、打率・出塁率・長打率・OPS・防御率・WHIPを再計算します。死球・犠飛の公式補足記録を出塁率の分母にも反映しています。</p>';
- if(bat.length){
-   html+='<h3>打撃</h3>'+table(
-     ["年","球団","試合","打席","打数","安打","二塁打","三塁打","本塁打","得点","打点","盗塁","四球","三振","打率","出塁率","長打率","OPS"],
-     [...bat.map(bt),totalBat]);
- }
- if(pit.length){
-   html+='<h3>投手</h3>'+table(
-     ["年","球団","登板","投球回","勝","敗","HP","S","奪三振","与四球","被安打","自責点","防御率","WHIP"],
-     [...pit.map(pt),totalPitch]);
- }
- if(!bat.length&&!pit.length)html+='<p class="empty">該当するNPB詳細年度成績は未収録です。</p>';
- return html+'</section>';
-}
-
-
-function npbSupplementView(data,id){
- const rows=data.rows.filter(x=>x.id===id);
- if(!rows.length)return "";
- const kinds={
- batting:[["totalBases","塁打"],["caughtStealing","盗塁刺"],["sacBunts","犠打"],
-   ["sacFlies","犠飛"],["hitByPitch","死球"],["gidp","併殺打"]],
- pitching:[["completeGames","完投"],["shutouts","完封"],["noWalks","無四球"],
-   ["battersFaced","対戦打者"],["homeRunsAllowed","被本塁打"],
-   ["hitBatters","与死球"],["wildPitches","暴投"],["balks","ボーク"],["runsAllowed","失点"]]
+   String(a.season.club).localeCompare(String(b.season.club),"ja"));
+ const bat=list.filter(r=>(numeric(r.detail?.pa)??0)>0||(numeric(r.season.games)??0)>0);
+ const pit=list.filter(r=>numeric(r.season.pitchGames)>0);
+ const tBat=sumNPB(bat),tPit=sumNPB(pit);
+ const extra=(rows,kind,key)=>d(sumSupplement(rows,kind,key));
+ const batColumns=["年","球団","試合","打席","打数","得点","安打","二塁打","三塁打","本塁打","塁打","打点","盗塁","盗塁刺","犠打","犠飛","四球","死球","三振","併殺打","打率","出塁率","長打率","OPS"];
+ const pitchColumns=["年","球団","登板","完投","完封","無四球","投球回","勝","敗","HP","S","対戦打者","被安打","被本塁打","与四球","与死球","奪三振","暴投","ボーク","失点","自責点","防御率","WHIP"];
+ const battingRow=r=>{
+   const a=r.season,x=r.detail||{},z=r.batting||{};
+   return [d(a.year),d(a.club),d(a.games),d(x.pa),d(x.ab),d(x.runs),d(x.hits),d(x.doubles),d(x.triples),d(a.hr),d(z.totalBases),d(a.rbi),d(a.sb),d(z.caughtStealing),d(z.sacBunts),d(z.sacFlies),d(x.walks),d(z.hitByPitch),d(x.strikeoutsBat),d(z.gidp),d(a.avg),d(x.obp),d(x.slg),d(x.ops)];
  };
- let content='<details class="panel npb-supplement"><summary>NPB公式の追加記録（確認済み項目）</summary>';
- for(const [kind,cols] of Object.entries(kinds)){
-   const found=rows.filter(x=>x.kind===kind).sort((a,b)=>Number(a.year)-Number(b.year));
-   if(!found.length)continue;
-   const total=cols.map(([key])=>{const numbers=found.map(r=>numeric(r[key]));return numbers.every(n=>n!==null)?numbers.reduce((a,b)=>a+b,0):null;});
-   const each=found.map(r=>[d(r.year),d(r.club),...cols.map(([key])=>d(r[key]))]);
-   content+='<h3>'+(kind==="batting"?"打撃追加項目":"投手追加項目")+'</h3>'+
-     table(["年","所属球団",...cols.map(([,name])=>name)],[
-       ...each,["<strong>収録分合計</strong>","—",...total.map(x=>x===null?"—":"<strong>"+e(x)+"</strong>")]
-     ])+'<p class="small muted">'+external(found[0].source,"NPB公式ページ")+'</p>';
- }
- content+='<p class="small muted">※追加項目は公式記録を個別に照合できた選手・年度だけを掲載します。未取得の選手に0を補いません。</p>';
- return content+'</details>';
+ const pitchingRow=r=>{
+   const a=r.season,x=r.detail||{},z=r.pitching||{};
+   return [d(a.year),d(a.club),d(a.pitchGames),d(z.completeGames),d(z.shutouts),d(z.noWalks),d(a.innings),d(a.wins),d(a.losses),d(a.hp),d(a.saves),d(z.battersFaced),d(x.hitsAllowed),d(z.homeRunsAllowed),d(x.walksPitch),d(z.hitBatters),d(x.strikeoutsPitch),d(z.wildPitches),d(z.balks),d(z.runsAllowed),d(x.earnedRuns),d(a.era),d(x.whip)];
+ };
+ const battingTotal=[
+  "<strong>通算</strong>","—",d(tBat.battingGames),d(tBat.plateAppearances),
+  d(tBat.atBats),d(tBat.runs),d(tBat.hits),d(tBat.doubles),d(tBat.triples),
+  d(tBat.homeRuns),extra(bat,"batting","totalBases"),d(tBat.rbi),
+  d(tBat.sb),extra(bat,"batting","caughtStealing"),extra(bat,"batting","sacBunts"),
+  extra(bat,"batting","sacFlies"),d(tBat.walks),extra(bat,"batting","hitByPitch"),
+  d(tBat.battingStrikeouts),extra(bat,"batting","gidp"),ratioLabel(tBat.avg),
+  ratioLabel(tBat.obp),ratioLabel(tBat.slg),ratioLabel(tBat.ops)
+ ];
+ const pitchingTotal=[
+  "<strong>通算</strong>","—",d(tPit.pitcherGames),
+  extra(pit,"pitching","completeGames"),extra(pit,"pitching","shutouts"),
+  extra(pit,"pitching","noWalks"),inningsLabel(tPit.outs),d(tPit.wins),d(tPit.losses),
+  d(tPit.hp),d(tPit.saves),extra(pit,"pitching","battersFaced"),d(tPit.hitsAllowed),
+  extra(pit,"pitching","homeRunsAllowed"),d(tPit.pitchingWalks),
+  extra(pit,"pitching","hitBatters"),d(tPit.pitchingStrikeouts),
+  extra(pit,"pitching","wildPitches"),extra(pit,"pitching","balks"),
+  extra(pit,"pitching","runsAllowed"),d(tPit.earnedRuns),ratioLabel(tPit.era,2),
+  ratioLabel(tPit.whip)
+ ];
+ let html='<section class="panel npb-detail"><h2>NPB年度別・通算成績</h2>'+
+  '<p class="small muted">NPB一軍のみ。公式追加記録も打撃・投手の各表へ統合しています。年度は古い順、通算は最下段です。表は横スクロールできます。</p>';
+ if(bat.length)html+='<h3>打撃</h3>'+table(batColumns,[...bat.map(battingRow),battingTotal]);
+ if(pit.length)html+='<h3>投手</h3>'+table(pitchColumns,[...pit.map(pitchingRow),pitchingTotal]);
+ if(!bat.length&&!pit.length)html+='<p class="empty">NPB一軍成績は未収録です。</p>';
+ return html+'</section>';
 }
 
 async function profilePage(){
@@ -261,13 +243,13 @@ const y=seasons.filter(s=>s.id===id).sort(yearsAsc),otherYears=y.filter(s=>s.lea
 app.innerHTML=`<p class="breadcrumb"><a href="index.html">選手一覧</a> / 世代ID ${e(id)}</p>`+title(p.name,`世代ID ${id}・${p.dob||"生年月日未取得"}`)+
 `<div class="stats">${countTile(y.filter(s=>s.league==="NPB").length,"NPB年度×球団")}${countTile(y.filter(s=>s.league==="独立").length,"独立年度×球団")}${countTile(it.length,"対象国際大会")}${countTile(summaries.reduce((n,x)=>n+x.years.length,0),"主要タイトル獲得")}</div>`+
 `<section class="panel"><h2>基本情報</h2><dl class="details"><dt>生年月日</dt><dd>${d(p.dob)}</dd><dt>守備位置・投打</dt><dd>${d(p.pos)}／${d(p.throws)}投${d(p.bats)}打</dd><dt>出身校</dt><dd>${d(p.school)}</dd><dt>最終経歴(2026)</dt><dd>${d(p.club2026)}</dd></dl>${info(external(p.npbUrl,"NPB公式選手ページ"))}</section>`+
-npbDetailView(npbDetail)+npbSupplementView(supplement,id)+
+npbDetailView(npbDetail)+
 (otherYears.length?`<section class="panel"><h2>年度別成績（NPB以外）</h2>${p.caution?`<p class="notice">独立リーグの一部数値は照合留保があります。出典・備考をご確認ください。</p>`:""}${table(seasonCols,seasonRows(otherYears))}<p class="small muted">※独立リーグ・MLB・その他海外リーグに収録記録がある場合のみ表示します。NPB成績は上の専用欄に掲載しています。欠測は「—」で表示します。</p></section>`:"")+
 
 `<section class="panel"><h2>所属・経歴</h2>${table(["区分","所属・役職","開始","終了"],c.map(a=>[d(a.category),d(a.club),d(a.start),d(a.end)]),"プロ・独立・球団スタッフの経歴は未収録です。")}</section>`+
 `<section class="panel"><h2>主要タイトル</h2>${summaries.length?`<ul class="award-summary">${summaries.map(x=>`<li>${e(x.name)} ${x.years.length}回（${e(compactYears(x.years))}）</li>`).join("")}</ul>`:`<p class="empty">該当する主要タイトルは、現在の収録データにありません。</p>`}<p class="small muted">NPB一軍のみ：MVP・沢村賞・長嶋賞・投手四冠・野手六冠・GG・B9・新人王を掲載しています。</p></section>`+
 `<section class="panel"><h2>オールスター</h2>${allstarYears.length?`<ul class="award-summary"><li>オールスター選出 ${allstarYears.length}回（${e(compactYears(allstarYears))}）</li></ul>`:`<p class="empty">オールスター選出の収録記録はありません。</p>`}</section>`+
-`<section class="panel"><h2>WBC・プレミア12・五輪</h2>${table(["年","大会","代表","試合・登板","本塁打","防御率","備考"],it.map(a=>[d(a.year),d(a.event),d(a.country),d(a.pitchGames||a.batGames),d(a.hr),d(a.era),`${external(a.source,"資料")} ${e(a.note)}`]))}</section>`;
+`<section class="panel international-detail"><h2>WBC・プレミア12・五輪</h2>${table(["年","大会","代表","試合・登板","本塁打","防御率","資料","備考"],it.map(a=>[d(a.year),d(a.event),d(a.country),d(a.pitchGames||a.batGames),d(a.hr),d(a.era),external(a.source,"資料")||"—",d(a.note)]))}</section>`;
 }
 async function seasonPage(){
 const [allRows,meta]=await Promise.all([load("seasons"),load("meta")]);
@@ -314,6 +296,26 @@ target.innerHTML=table(["選手","年","大会","国","区分","投手登板","�
 q.addEventListener("input",render);evt.addEventListener("change",render);render();
 }
 
+
+const TEAM_ABBREV={
+ "読売":"巨人","読売ジャイアンツ":"巨人","巨人":"巨人",
+ "東京ヤクルト":"ヤクルト","ヤクルト":"ヤクルト",
+ "横浜DeNA":"DeNA","横浜DeNAベイスターズ":"DeNA",
+ "中日":"中日","中日ドラゴンズ":"中日",
+ "阪神":"阪神","阪神タイガース":"阪神",
+ "広島東洋":"広島","広島":"広島",
+ "北海道日本ハム":"日ハム","日本ハム":"日ハム",
+ "東北楽天":"楽天","楽天":"楽天",
+ "千葉ロッテ":"ロッテ","ロッテ":"ロッテ",
+ "埼玉西武":"西武","西武":"西武",
+ "オリックス":"オリ","オリックス・バファローズ":"オリ",
+ "福岡ソフトバンク":"ソフト","ソフトバンク":"ソフト",
+ "オイシックス新潟":"オイシ","オイシックス":"オイシ",
+ "くふうハヤテ":"ハヤテ","くふうハヤテベンチャーズ静岡":"ハヤテ",
+ "ハヤテ":"ハヤテ"
+};
+function teamAbbrev(name){return TEAM_ABBREV[String(name||"")]||String(name||"");}
+
 async function rankingsPage(){
  const [players,seasons,extended,supplement]=await Promise.all(["players","seasons","npb_extended","npb_supplement"].map(load));
  const records=joinedNPB(seasons,extended,supplement), people=new Map(players.map(x=>[x.id,x]));
@@ -355,7 +357,7 @@ async function rankingsPage(){
    }
    const entries=[...group.entries()].map(([id,rows])=>({
      id,name:people.get(id)?.name||rows[0].season.name,total:sumNPB(rows),
-     clubs:[...new Set(rows.map(x=>x.season.club))].join("・"),
+     clubs:[...new Set([...rows].sort((a,b)=>Number(a.season.year)-Number(b.season.year)).map(x=>teamAbbrev(x.season.club)))].join("・"),
      years:[...new Set(rows.map(x=>Number(x.season.year)))].sort((a,b)=>a-b)
    }));
    const min=Math.max(0,Number(minimum.value)||0);
@@ -366,12 +368,12 @@ async function rankingsPage(){
      (["avg","obp","slg","ops"].includes(metric.value)?"（最低打数"+min+"）":
        ["era","whip"].includes(metric.value)?"（最低投球回"+min+"）":"");
    const rows=ranked.map(x=>[
-     d(x.rank),'<a href="player.html?id='+encodeURIComponent(x.id)+'">'+e(x.name)+'</a>',
-     d(x.clubs),d(annual?year.value:compactYears(x.years)),
-     '<strong>'+metricLabel(x.total,metric.value)+'</strong>'
+     '<span class="rank-number" aria-label="第'+e(x.rank)+'位">'+e(x.rank)+'.</span><a href="player.html?id='+encodeURIComponent(x.id)+'">'+e(x.name)+'</a>',
+     d(x.clubs),'<strong>'+metricLabel(x.total,metric.value)+'</strong>',
+     d(annual?year.value:compactYears(x.years))
    ]);
    target.innerHTML='<div class="leaders-table">'+
-      table(["順位","選手名","所属球団","対象年度",metricName],rows,"条件を満たす記録がありません。")+
+      table(["選手","チーム","記録","年度"],rows,"条件を満たす記録がありません。")+
      '</div>';
  }
  scope.addEventListener("change",()=>{resetMin();render()});
