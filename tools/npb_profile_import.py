@@ -78,6 +78,7 @@ def main():
  args=argparse.ArgumentParser()
  args.add_argument("--limit",type=int,default=0)
  args.add_argument("--delay",type=float,default=2.0)
+ args.add_argument("--only",type=str,default="",help="Comma-separated generation IDs; omit for all")
  a=args.parse_args()
  players=get_json("players.json")
  seasons=get_json("seasons.json")
@@ -87,8 +88,11 @@ def main():
   byyear.setdefault((row["id"],row["year"]),[]).append(row)
  detailed={(r["id"],r["year"],r["club"]):r for r in get_json("npb_extended.json")["rows"]}
  pilot=get_json("npb_supplement.json")
- records={(r["id"],r["year"],r["kind"]):r for r in pilot["rows"]}
+ records={(r["id"],r["year"],r["kind"],r.get("club","")):r for r in pilot["rows"]}
  urls=[p for p in players if re.fullmatch(r"https://npb\.jp/bis/players/\d+\.html",p.get("npbUrl",""))]
+ if a.only:
+  choices=set(s.strip() for s in a.only.split(","))
+  urls=[p for p in urls if p["id"] in choices]
  if a.limit>0:urls=urls[:a.limit]
  rp=urllib.robotparser.RobotFileParser()
  rp.set_url("https://npb.jp/robots.txt")
@@ -108,7 +112,7 @@ def main():
    for row in rows:
     source,err=find_matching(p["id"],row,byyear,detailed)
     if err:issues[err]+=1;continue
-    key=(p["id"],row["year"],row["kind"])
+    key=(p["id"],row["year"],row["kind"],source["club"])
     item={"id":p["id"],"year":row["year"],"kind":row["kind"],"source":url,"club":source["club"]}
     for f in FIELDS[row["kind"]].values():
      value=row[f]
@@ -124,9 +128,15 @@ def main():
   except Exception as error:reports.append({"id":p["id"],"name":p["name"],"status":"fetch_error","detail":str(error)[:250],"url":url})
   print(f"{i+1}/{len(urls)}: {p['id']} {p['name']} => {reports[-1]['status']}, rows={reports[-1].get('validated',0)}",flush=True)
  current=datetime.date.today().isoformat()
- output={**pilot,"checked":current,"sourceScope":"NPB公式個人年度別成績の追加項目。出典URL・年度・一軍所属との突合が成功した記録のみ。","rows":sorted(records.values(),key=lambda x:(x["id"],int(x["year"]),x["kind"]))}
+ output={**pilot,"checked":current,"sourceScope":"NPB公式個人年度別成績の追加項目。出典URL・年度・一軍所属との突合が成功した記録のみ。","rows":sorted(records.values(),key=lambda x:(x["id"],int(x["year"]),x["kind"],x.get("club","")))}
  (DATA/"npb_supplement.json").write_text(json.dumps(output,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf8")
- report={"date":current,"profilesInMaster":len(players),"profilesWithOfficialURL":len([p for p in players if p.get("npbUrl")]),"attempted":len(urls),"reported":len(reports),"successful":sum(r["status"]=="ok" for r in reports),"newlyValidated":changed,"totalSupplementRows":len(records),"results":reports,"robotsBlocked":blocked}
+ all_results=reports
+ if a.only and (DATA/"npb_import_audit.json").exists():
+  previous=get_json("npb_import_audit.json")
+  lookup={r["id"]:r for r in previous.get("results",[])}
+  for result in reports:lookup[result["id"]]=result
+  all_results=[lookup[p["id"]] for p in players if p["id"] in lookup]
+ report={"date":current,"profilesInMaster":len(players),"profilesWithOfficialURL":len([p for p in players if p.get("npbUrl")]),"attempted":len(all_results),"reported":len(all_results),"successful":sum(r["status"]=="ok" for r in all_results),"newlyValidated":sum(r.get("validated",0) for r in all_results),"totalSupplementRows":len(records),"results":all_results,"robotsBlocked":blocked}
  (DATA/"npb_import_audit.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf8")
  print("SUMMARY",json.dumps({k:v for k,v in report.items() if k!="results"},ensure_ascii=False),flush=True)
 if __name__=="__main__":main()

@@ -230,11 +230,11 @@ function npbSupplementView(data,id){
  for(const [kind,cols] of Object.entries(kinds)){
    const found=rows.filter(x=>x.kind===kind).sort((a,b)=>Number(a.year)-Number(b.year));
    if(!found.length)continue;
-   const total=cols.map(([key])=>found.reduce((n,r)=>n+(numeric(r[key])||0),0));
-   const each=found.map(r=>[d(r.year),...cols.map(([key])=>d(r[key]))]);
+   const total=cols.map(([key])=>{const numbers=found.map(r=>numeric(r[key]));return numbers.every(n=>n!==null)?numbers.reduce((a,b)=>a+b,0):null;});
+   const each=found.map(r=>[d(r.year),d(r.club),...cols.map(([key])=>d(r[key]))]);
    content+='<h3>'+(kind==="batting"?"打撃追加項目":"投手追加項目")+'</h3>'+
-     table(["年",...cols.map(([,name])=>name)],[
-       ...each,["<strong>通算</strong>",...total.map(x=>'<strong>'+e(x)+'</strong>')]
+     table(["年","所属球団",...cols.map(([,name])=>name)],[
+       ...each,["<strong>収録分合計</strong>","—",...total.map(x=>x===null?"—":"<strong>"+e(x)+"</strong>")]
      ])+'<p class="small muted">'+external(found[0].source,"NPB公式ページ")+'</p>';
  }
  content+='<p class="small muted">※追加項目は公式記録を個別に照合できた選手・年度だけを掲載します。未取得の選手に0を補いません。</p>';
