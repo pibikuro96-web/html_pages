@@ -5,8 +5,8 @@
   "attempted": 97,
   "reported": 97,
   "successful": 96,
-  "newlyValidated": 844,
-  "totalSupplementRows": 843,
+  "newlyValidated": 847,
+  "totalSupplementRows": 847,
   "results": [
     {
       "id": "001",
@@ -148,10 +148,8 @@
       "name": "齋藤綱記",
       "status": "ok",
       "parsed": 22,
-      "validated": 21,
-      "issues": {
-        "existing_mismatch": 1
-      },
+      "validated": 22,
+      "issues": {},
       "url": "https://npb.jp/bis/players/11915130.html"
     },
     {
@@ -420,10 +418,8 @@
       "name": "伊藤裕季也",
       "status": "ok",
       "parsed": 9,
-      "validated": 8,
-      "issues": {
-        "existing_mismatch": 1
-      },
+      "validated": 9,
+      "issues": {},
       "url": "https://npb.jp/bis/players/41145138.html"
     },
     {
@@ -512,10 +508,8 @@
       "name": "佐藤龍世",
       "status": "ok",
       "parsed": 7,
-      "validated": 6,
-      "issues": {
-        "existing_mismatch": 1
-      },
+      "validated": 7,
+      "issues": {},
       "url": "https://npb.jp/bis/players/81785138.html"
     },
     {
