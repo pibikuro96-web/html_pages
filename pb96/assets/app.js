@@ -215,16 +215,42 @@ function npbDetailView(records){
  return html+'</section>';
 }
 
+
+function npbSupplementView(data,id){
+ const rows=data.rows.filter(x=>x.id===id);
+ if(!rows.length)return "";
+ const kinds={
+ batting:[["totalBases","塁打"],["caughtStealing","盗塁刺"],["sacBunts","犠打"],
+   ["sacFlies","犠飛"],["hitByPitch","死球"],["gidp","併殺打"]],
+ pitching:[["completeGames","完投"],["shutouts","完封"],["noWalks","無四球"],
+   ["battersFaced","対戦打者"],["homeRunsAllowed","被本塁打"],
+   ["hitBatters","与死球"],["wildPitches","暴投"],["balks","ボーク"],["runsAllowed","失点"]]
+ };
+ let content='<details class="panel npb-supplement"><summary>NPB公式の追加記録（確認済み項目）</summary>';
+ for(const [kind,cols] of Object.entries(kinds)){
+   const found=rows.filter(x=>x.kind===kind).sort((a,b)=>Number(a.year)-Number(b.year));
+   if(!found.length)continue;
+   const total=cols.map(([key])=>found.reduce((n,r)=>n+(numeric(r[key])||0),0));
+   const each=found.map(r=>[d(r.year),...cols.map(([key])=>d(r[key]))]);
+   content+='<h3>'+(kind==="batting"?"打撃追加項目":"投手追加項目")+'</h3>'+
+     table(["年",...cols.map(([,name])=>name)],[
+       ...each,["<strong>通算</strong>",...total.map(x=>'<strong>'+e(x)+'</strong>')]
+     ])+'<p class="small muted">'+external(found[0].source,"NPB公式ページ")+'</p>';
+ }
+ content+='<p class="small muted">※追加項目は公式記録を個別に照合できた選手・年度だけを掲載します。未取得の選手に0を補いません。</p>';
+ return content+'</details>';
+}
+
 async function profilePage(){
 const id=new URLSearchParams(location.search).get("id");
-const [players,seasons,careers,internationals,awards,allstars,extended]=await Promise.all(["players","seasons","careers","internationals","awards","allstars","npb_extended"].map(load));
+const [players,seasons,careers,internationals,awards,allstars,extended,supplement]=await Promise.all(["players","seasons","careers","internationals","awards","allstars","npb_extended","npb_supplement"].map(load));
 const p=players.find(v=>v.id===id);if(!p){app.innerHTML=title("選手が見つかりません")+`<p>有効な世代IDを指定してください。 <a href="index.html">一覧へ戻る</a></p>`;return;}
 const y=seasons.filter(s=>s.id===id).sort(yearsAsc),c=careers.filter(s=>s.id===id).sort((a,b)=>Number(a.order)-Number(b.order)),it=internationals.filter(s=>s.id===id).sort(yearsAsc),aw=awards.filter(s=>s.id===id),as=allstars.filter(s=>s.id===id).sort(yearsAsc),npbDetail=joinedNPB(y,extended),allstarYears=[...new Set(as.map(s=>Number(s.year)).filter(Number.isInteger))].sort((a,b)=>a-b),summaries=summarizeTitles(aw);
 app.innerHTML=`<p class="breadcrumb"><a href="index.html">選手一覧</a> / 世代ID ${e(id)}</p>`+title(p.name,`世代ID ${id}・${p.dob||"生年月日未取得"}`)+
 `<div class="stats">${countTile(y.filter(s=>s.league==="NPB").length,"NPB年度×球団")}${countTile(y.filter(s=>s.league==="独立").length,"独立年度×球団")}${countTile(it.length,"対象国際大会")}${countTile(summaries.reduce((n,x)=>n+x.years.length,0),"主要タイトル獲得")}</div>`+
 `<section class="panel"><h2>基本情報</h2><dl class="details"><dt>生年月日</dt><dd>${d(p.dob)}</dd><dt>守備位置・投打</dt><dd>${d(p.pos)}／${d(p.throws)}投${d(p.bats)}打</dd><dt>出身校</dt><dd>${d(p.school)}</dd><dt>最終経歴(2026)</dt><dd>${d(p.club2026)}</dd></dl>${info(external(p.npbUrl,"NPB公式選手ページ"))}</section>`+
 `<section class="panel"><h2>年度別成績</h2>${p.caution?`<p class="notice">独立リーグの一部数値は照合留保があります。出典・備考をご確認ください。</p>`:""}${table(seasonCols,seasonRows(y), "年度別成績の記録は未収録です。未出場やゼロ成績を意味しません。")}<p class="small muted">※球団・リーグ別の原表行です。NPBと独立とMLBを合算していません。空欄は「—」で表示します。</p></section>`+
-npbDetailView(npbDetail)+
+npbDetailView(npbDetail)+npbSupplementView(supplement,id)+
 `<section class="panel"><h2>所属・経歴</h2>${table(["区分","所属・役職","開始","終了"],c.map(a=>[d(a.category),d(a.club),d(a.start),d(a.end)]),"プロ・独立・球団スタッフの経歴は未収録です。")}</section>`+
 `<section class="panel"><h2>主要タイトル</h2>${summaries.length?`<ul class="award-summary">${summaries.map(x=>`<li>${e(x.name)} ${x.years.length}回（${e(compactYears(x.years))}）</li>`).join("")}</ul>`:`<p class="empty">該当する主要タイトルは、現在の収録データにありません。</p>`}<p class="small muted">NPB一軍のみ：MVP・沢村賞・長嶋賞・投手四冠・野手六冠・GG・B9・新人王を掲載しています。</p></section>`+
 `<section class="panel"><h2>オールスター</h2>${allstarYears.length?`<ul class="award-summary"><li>オールスター選出 ${allstarYears.length}回（${e(compactYears(allstarYears))}）</li></ul>`:`<p class="empty">オールスター選出の収録記録はありません。</p>`}</section>`+
