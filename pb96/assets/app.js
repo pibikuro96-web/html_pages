@@ -65,6 +65,96 @@ function compactYears(years){
 const seasonCols=["年度","リーグ","球団","野手試合","打率","本塁打","打点","盗塁","投手登板","防御率","勝","敗","HP","S","投球回","資料"];
 const seasonRows=x=>x.map(s=>statCells(s));
 function countTile(n,text){return `<div class="stat"><strong>${e(n)}</strong><span>${e(text)}</span></div>`}
+
+const NPB_NUMBER_FIELDS={
+ battingGames:["season","games"],plateAppearances:["detail","pa"],atBats:["detail","ab"],
+ hits:["detail","hits"],doubles:["detail","doubles"],triples:["detail","triples"],runs:["detail","runs"],
+ walks:["detail","walks"],battingStrikeouts:["detail","strikeoutsBat"],
+ homeRuns:["season","hr"],rbi:["season","rbi"],sb:["season","sb"],
+ pitcherGames:["season","pitchGames"],wins:["season","wins"],losses:["season","losses"],
+ hp:["season","hp"],saves:["season","saves"],outs:["season","outs"],
+ pitchingStrikeouts:["detail","strikeoutsPitch"],pitchingWalks:["detail","walksPitch"],
+ earnedRuns:["detail","earnedRuns"],hitsAllowed:["detail","hitsAllowed"]
+};
+function numeric(x){
+ if(x===undefined||x===null||String(x).trim()==="")return null;
+ const n=Number(x);return Number.isFinite(n)?n:null;
+}
+function joinedNPB(seasons,extended){
+ const map=new Map(extended.rows.map(x=>[[x.id,x.year,x.club].join("|"),x]));
+ return seasons.filter(s=>s.league==="NPB").map(season=>({season,detail:map.get([season.id,season.year,season.club].join("|"))||null}));
+}
+function sumNPB(rows){
+ const out={};
+ for(const [name,[src,key]] of Object.entries(NPB_NUMBER_FIELDS)){
+   const vals=rows.map(r=>numeric(r[src]?.[key])).filter(v=>v!==null);
+   out[name]=vals.length?vals.reduce((n,x)=>n+x,0):null;
+   out[name+"Count"]=vals.length;
+ }
+ out.avg=out.atBats>0&&out.hits!==null?out.hits/out.atBats:null;
+ out.slg=out.atBats>0&&out.hits!==null&&out.doubles!==null&&out.triples!==null&&out.homeRuns!==null?
+   (out.hits+out.doubles+2*out.triples+3*out.homeRuns)/out.atBats:null;
+ out.era=out.outs>0&&out.earnedRuns!==null?27*out.earnedRuns/out.outs:null;
+ out.whip=out.outs>0&&out.hitsAllowed!==null&&out.pitchingWalks!==null?
+   3*(out.hitsAllowed+out.pitchingWalks)/out.outs:null;
+ return out;
+}
+function inningsLabel(outs){
+ if(outs===null||outs===undefined)return "—";
+ const v=Math.round(outs),whole=Math.floor(v/3),r=v%3;
+ return e(r?whole+" "+r+"/3":String(whole));
+}
+function ratioLabel(value,places=3){
+ if(value===null||!Number.isFinite(value))return "—";
+ const fixed=value.toFixed(places);
+ return e(places===3?fixed.replace(/^0\./,"."):fixed);
+}
+function yearlyNPB(rows){
+ const m=new Map();
+ for(const rec of rows){const k=rec.season.year;if(!m.has(k))m.set(k,[]);m.get(k).push(rec);}
+ return [...m.entries()].sort((a,b)=>Number(a[0])-Number(b[0])).map(([year,list])=>({year,rows:list,total:sumNPB(list),club:[...new Set(list.map(x=>x.season.club))].join("・")}));
+}
+const RANK_CATEGORIES={
+ batting:[
+  ["battingGames","出場試合"],["plateAppearances","打席"],["atBats","打数"],["hits","安打"],
+  ["doubles","二塁打"],["triples","三塁打"],["homeRuns","本塁打"],["rbi","打点"],
+  ["sb","盗塁"],["runs","得点"],["walks","四球"],["battingStrikeouts","三振"],
+  ["avg","打率"],["slg","長打率"]
+ ],
+ pitching:[
+  ["pitcherGames","登板"],["wins","勝利"],["losses","敗戦"],["hp","ホールドポイント"],
+  ["saves","セーブ"],["outs","投球回"],["pitchingStrikeouts","奪三振"],
+  ["pitchingWalks","与四球"],["earnedRuns","自責点"],["hitsAllowed","被安打"],
+  ["era","防御率"],["whip","WHIP"]
+ ]
+};
+function metricValue(total,metric){return total[metric]??null;}
+function metricLabel(total,metric){
+ const v=metricValue(total,metric);
+ return metric==="outs"?inningsLabel(v):
+   metric==="avg"||metric==="slg"||metric==="whip"?ratioLabel(v,3):
+   metric==="era"?ratioLabel(v,2):v===null?"—":e(v);
+}
+function metricQualified(total,metric,min){
+ const value=metricValue(total,metric);
+ if(value===null)return false;
+ if(metric==="avg"||metric==="slg")return total.atBats!==null&&total.atBats>=min;
+ if(metric==="era"||metric==="whip")return total.outs!==null&&total.outs>=min*3;
+ return value>0;
+}
+function rankRecords(source,metric,minimum){
+ const low=metric==="era"||metric==="whip";
+ const rankable=source.filter(x=>metricQualified(x.total,metric,minimum));
+ rankable.sort((a,b)=>low?metricValue(a.total,metric)-metricValue(b.total,metric)||Number(a.id)-Number(b.id):
+ metricValue(b.total,metric)-metricValue(a.total,metric)||Number(a.id)-Number(b.id));
+ let last=null,rank=0;
+ return rankable.map((x,i)=>{
+   const value=metricValue(x.total,metric);
+   if(last===null||Math.abs(value-last)>0.00000001)rank=i+1;
+   last=value;return {...x,rank};
+ });
+}
+
 async function listPage(){
 const [players,meta]=await Promise.all([load("players"),load("meta")]);
 app.innerHTML=title("1996年度世代 選手一覧","1996年4月2日～1997年4月1日生まれ。世代IDで選手を管理します。")+
