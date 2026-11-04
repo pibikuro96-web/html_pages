@@ -272,6 +272,75 @@ target.innerHTML=table(["選手","年","大会","国","区分","投手登板","�
 }
 q.addEventListener("input",render);evt.addEventListener("change",render);render();
 }
+
+async function rankingsPage(){
+ const [players,seasons,extended]=await Promise.all(["players","seasons","npb_extended"].map(load));
+ const records=joinedNPB(seasons,extended), people=new Map(players.map(x=>[x.id,x]));
+ const years=[...new Set(records.map(r=>r.season.year))].sort((a,b)=>Number(a)-Number(b));
+ const opts=k=>RANK_CATEGORIES[k].map(([id,name])=>'<option value="'+e(id)+'">'+e(name)+'</option>').join("");
+ app.innerHTML=title("1996世代 NPBランキング","1996年度生まれの選手のみを対象にしたNPB一軍の年度別・通算ランキングです。")+
+ '<div class="control-bar">'+
+ '<label>集計期間<select id="scope"><option value="career">NPB通算</option><option value="year">年度別</option></select></label>'+
+ '<label>年度<select id="year">'+years.map(y=>'<option value="'+e(y)+'">'+e(y)+'年</option>').join("")+'</select></label>'+
+ '<label>分野<select id="kind"><option value="batting">打撃</option><option value="pitching">投手</option></select></label>'+
+ '<label>指標<select id="metric">'+opts("batting")+'</select></label>'+
+ '<label>率の最低基準（打数／投球回）<input id="minimum" type="number" min="0" step="1" value="300"></label>'+
+ '</div><p id="rank-info" class="rank-note"></p><div id="results"></div>'+
+ '<p class="small muted">※NPB全選手ではなく、1996年度世代内の順位です。同一年の複数球団成績は合算します。率の順位は公式の規定打席・規定投球回ではなく、指定した最低打数／投球回による参考順位です。欠測は0として扱いません。通算出塁率・通算OPSは必要な分母が未収録のため計算しません。</p>';
+ const scope=app.querySelector("#scope"),year=app.querySelector("#year"),
+ kind=app.querySelector("#kind"),metric=app.querySelector("#metric"),
+ minimum=app.querySelector("#minimum"),infoEl=app.querySelector("#rank-info"),target=app.querySelector("#results");
+ scope.value="career";year.value=years[years.length-1]||"";kind.value="batting";metric.value="homeRuns";
+ function refreshOptions(){
+   const prev=metric.value;
+   metric.innerHTML=opts(kind.value);
+   metric.value=RANK_CATEGORIES[kind.value].some(x=>x[0]===prev)?prev:
+     (kind.value==="pitching"?"wins":"homeRuns");
+ }
+ function resetMin(){
+   const ratio=["avg","slg","era","whip"].includes(metric.value);
+   minimum.disabled=!ratio;
+   if(ratio)minimum.value=scope.value==="career"?
+     (kind.value==="batting"?"300":"100"):(kind.value==="batting"?"100":"50");
+ }
+ function render(){
+   const annual=scope.value==="year";year.disabled=!annual;
+   const group=new Map();
+   for(const x of records){
+     if(annual&&x.season.year!==year.value)continue;
+     const id=x.season.id;
+     if(!group.has(id))group.set(id,[]);
+     group.get(id).push(x);
+   }
+   const entries=[...group.entries()].map(([id,rows])=>({
+     id,name:people.get(id)?.name||rows[0].season.name,total:sumNPB(rows),
+     clubs:[...new Set(rows.map(x=>x.season.club))].join("・"),
+     years:[...new Set(rows.map(x=>Number(x.season.year)))].sort((a,b)=>a-b)
+   }));
+   const min=Math.max(0,Number(minimum.value)||0);
+   const ranked=rankRecords(entries,metric.value,min);
+   const metricName=RANK_CATEGORIES[kind.value].find(x=>x[0]===metric.value)?.[1]||"";
+   infoEl.textContent=(annual?year.value+"年":"NPB通算")+"／"+metricName+
+     "／対象"+ranked.length+"人"+
+     (["avg","slg"].includes(metric.value)?"（最低打数"+min+"）":
+       ["era","whip"].includes(metric.value)?"（最低投球回"+min+"）":"");
+   const rows=ranked.map(x=>[
+     d(x.rank),'<a href="player.html?id='+encodeURIComponent(x.id)+'">'+e(x.name)+'</a>',
+     d(x.clubs),d(annual?year.value:compactYears(x.years)),
+     '<strong>'+metricLabel(x.total,metric.value)+'</strong>'
+   ]);
+   target.innerHTML='<div class="leaders-table">'+
+      table(["順位","選手名","所属球団","対象年度",metricName],rows,"条件を満たす記録がありません。")+
+     '</div>';
+ }
+ scope.addEventListener("change",()=>{resetMin();render()});
+ year.addEventListener("change",render);
+ kind.addEventListener("change",()=>{refreshOptions();resetMin();render()});
+ metric.addEventListener("change",()=>{resetMin();render()});
+ minimum.addEventListener("input",render);
+ resetMin();render();
+}
+
 async function aboutPage(){
 const m=await load("meta");
 app.innerHTML=title("データの見方","公開データの対象・更新方法・未確認値の扱い")+
@@ -281,7 +350,7 @@ app.innerHTML=title("データの見方","公開データの対象・更新方�
 ``;
 }
 async function init(){
-try{if(page==="index")await listPage();else if(page==="player")await profilePage();else if(page==="seasons")await seasonPage();else if(page==="compare")await comparePage();else if(page==="international")await internationalPage();else if(page==="about")await aboutPage();else app.textContent="不明なページです。";}
+try{if(page==="index")await listPage();else if(page==="player")await profilePage();else if(page==="seasons")await seasonPage();else if(page==="compare")await comparePage();else if(page==="international")await internationalPage();else if(page==="rankings")await rankingsPage();else if(page==="about")await aboutPage();else app.textContent="不明なページです。";}
 catch(err){app.innerHTML=`<section class="panel"><h2>データを読み込めませんでした</h2><p>${e(err.message)}</p><p>GitHub Pages上で開いているか、dataフォルダが配置されているか確認してください。</p></section>`;console.error(err);}
 }
 init();
