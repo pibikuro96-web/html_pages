@@ -67,17 +67,17 @@ const seasonRows=x=>x.map(s=>statCells(s));
 function countTile(n,text){return `<div class="stat"><strong>${e(n)}</strong><span>${e(text)}</span></div>`}
 async function listPage(){
 const [players,meta]=await Promise.all([load("players"),load("meta")]);
-app.innerHTML=title("1996年度世代 選手一覧","1996年4月2日～1997年4月1日生まれ。新規登録選手も世代IDで管理します。")+
+app.innerHTML=title("1996年度世代 選手一覧","1996年4月2日～1997年4月1日生まれ。世代IDで選手を管理します。")+
 `<div class="stats">${countTile(players.length,"登録選手")}${countTile(meta.counts.seasons,"年度別成績レコード")}${countTile(meta.counts.internationals,"対象国際大会記録")}</div>`+
 `<div class="control-bar"><label>選手名・球団・学校を検索<input id="search" type="search" placeholder="例：岡本、阪神、西武"></label><label>守備位置<select id="position"><option value="">すべて</option><option value="投">投手</option><option value="捕">捕手</option><option value="内">内野手</option><option value="外">外野手</option></select></label><label>並べ替え<select id="sort"><option value="id">世代ID順</option><option value="name">氏名順</option><option value="dob">生年月日順</option><option value="npb">NPB成績最終年順</option></select></label></div>`+
-`<p id="counter" class="small muted" aria-live="polite"></p><div id="results"></div>`+info("※2026年の所属は資料確認時点の記録です。「要確認」は現在の所属確定を意味しません。");
+`<p id="counter" class="small muted" aria-live="polite"></p><div id="results"></div>`+info("※最終経歴(2026)は資料で確認できた内容です。2027年の所属を保証するものではありません。");
 const q=app.querySelector("#search"),pos=app.querySelector("#position"),sort=app.querySelector("#sort"),target=app.querySelector("#results"),counter=app.querySelector("#counter");
 function render(){
 const text=q.value.normalize("NFKC").toLocaleLowerCase("ja");
-let x=players.filter(p=>([p.id,p.name,p.club2026,p.club2025,p.school].join(" ").normalize("NFKC").toLocaleLowerCase("ja").includes(text))&&(!pos.value||p.pos.includes(pos.value)));
+let x=players.filter(p=>([p.id,p.name,p.club2026,p.school].join(" ").normalize("NFKC").toLocaleLowerCase("ja").includes(text))&&(!pos.value||p.pos.includes(pos.value)));
 x.sort(sort.value==="name"?(a,b)=>a.name.localeCompare(b.name,"ja"):sort.value==="dob"?(a,b)=>a.dob.localeCompare(b.dob):sort.value==="npb"?(a,b)=>Number(b.lastNpbYear||0)-Number(a.lastNpbYear||0):((a,b)=>Number(a.id)-Number(b.id)));
 counter.textContent=`${x.length} / ${players.length} 人`;
-target.innerHTML=table(["ID","選手名","生年月日","位置","2026年確認所属・経歴","現況","NPB最終成績年"],x.map(p=>[d(p.id),who(p),d(p.dob),d(p.pos),d(p.club2026),badge(p.clubStatus),d(p.lastNpbYear)]),"一致する選手はありません。");
+target.innerHTML=`<div class="player-list">`+table(["ID","選手名","生年月日","位置","最終経歴(2026)","NPB最終成績年"],x.map(p=>[d(p.id),who(p),d(p.dob),d(p.pos),d(p.club2026),d(p.lastNpbYear)]),"一致する選手はありません。")+`</div>`;
 }
 for(const n of [q,pos,sort])n.addEventListener(n===q?"input":"change",render);
 render();
@@ -89,7 +89,7 @@ const p=players.find(v=>v.id===id);if(!p){app.innerHTML=title("選手が見つ�
 const y=seasons.filter(s=>s.id===id).sort(yearsAsc),c=careers.filter(s=>s.id===id).sort((a,b)=>Number(a.order)-Number(b.order)),it=internationals.filter(s=>s.id===id).sort(yearsAsc),aw=awards.filter(s=>s.id===id),as=allstars.filter(s=>s.id===id).sort(yearsAsc),allstarYears=[...new Set(as.map(s=>Number(s.year)).filter(Number.isInteger))].sort((a,b)=>a-b),summaries=summarizeTitles(aw);
 app.innerHTML=`<p class="breadcrumb"><a href="index.html">選手一覧</a> / 世代ID ${e(id)}</p>`+title(p.name,`世代ID ${id}・${p.dob||"生年月日未取得"}`)+
 `<div class="stats">${countTile(y.filter(s=>s.league==="NPB").length,"NPB年度×球団")}${countTile(y.filter(s=>s.league==="独立").length,"独立年度×球団")}${countTile(it.length,"対象国際大会")}${countTile(summaries.reduce((n,x)=>n+x.years.length,0),"主要タイトル獲得")}</div>`+
-`<section class="panel"><h2>基本情報・2026年確認状況</h2><dl class="details"><dt>生年月日</dt><dd>${d(p.dob)}</dd><dt>守備位置・投打</dt><dd>${d(p.pos)}／${d(p.throws)}投${d(p.bats)}打</dd><dt>出身校</dt><dd>${d(p.school)}</dd><dt>2025年保存球団</dt><dd>${d(p.club2025)}</dd><dt>2026年確認所属・経歴</dt><dd>${d(p.club2026)}</dd><dt>現況確認</dt><dd>${badge(p.clubStatus)}</dd><dt>確認日</dt><dd>${d(p.checked)}</dd></dl>${p.clubNote?`<p class="notice">${e(p.clubNote)}</p>`:""}${info(external(p.clubUrl,"現況の根拠")+`　${external(p.npbUrl,"NPB公式選手ページ")}`)}</section>`+
+`<section class="panel"><h2>基本情報</h2><dl class="details"><dt>生年月日</dt><dd>${d(p.dob)}</dd><dt>守備位置・投打</dt><dd>${d(p.pos)}／${d(p.throws)}投${d(p.bats)}打</dd><dt>出身校</dt><dd>${d(p.school)}</dd><dt>最終経歴(2026)</dt><dd>${d(p.club2026)}</dd></dl>${info(external(p.npbUrl,"NPB公式選手ページ"))}</section>`+
 `<section class="panel"><h2>年度別成績</h2>${p.caution?`<p class="notice">独立リーグの一部数値は照合留保があります。出典・備考をご確認ください。</p>`:""}${table(seasonCols,seasonRows(y), "年度別成績の記録は未収録です。未出場やゼロ成績を意味しません。")}<p class="small muted">※球団・リーグ別の原表行です。NPBと独立とMLBを合算していません。空欄は「—」で表示します。</p></section>`+
 `<section class="panel"><h2>所属・経歴</h2>${table(["区分","所属・役職","開始","終了"],c.map(a=>[d(a.category),d(a.club),d(a.start),d(a.end)]),"プロ・独立・球団スタッフの経歴は未収録です。")}</section>`+
 `<section class="panel"><h2>主要タイトル</h2>${summaries.length?`<ul class="award-summary">${summaries.map(x=>`<li>${e(x.name)} ${x.years.length}回（${e(compactYears(x.years))}）</li>`).join("")}</ul>`:`<p class="empty">該当する主要タイトルは、現在の収録データにありません。</p>`}<p class="small muted">NPB一軍のみ：MVP・沢村賞・長嶋賞・投手四冠・野手六冠・GG・B9・新人王を掲載しています。</p></section>`+
