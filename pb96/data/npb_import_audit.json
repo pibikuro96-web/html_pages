@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-04",
+  "profilesInMaster": 122,
+  "profilesWithOfficialURL": 97,
+  "attempted": 3,
+  "reported": 3,
+  "successful": 3,
+  "newlyValidated": 57,
+  "totalSupplementRows": 57,
+  "results": [
+    {
+      "id": "001",
+      "name": "髙橋光成",
+      "status": "ok",
+      "parsed": 24,
+      "validated": 24,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/71075130.html"
+    },
+    {
+      "id": "002",
+      "name": "岡本和真",
+      "status": "ok",
+      "parsed": 11,
+      "validated": 11,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/11515130.html"
+    },
+    {
+      "id": "003",
+      "name": "松本裕樹",
+      "status": "ok",
+      "parsed": 22,
+      "validated": 22,
+      "issues": {},
+      "url": "https://npb.jp/bis/players/61665130.html"
+    }
+  ],
+  "robotsBlocked": false
+}
