@@ -1,0 +1,4 @@
+# GitHub Pages (Jekyll)
+# Keep the old player-list source in the repository, but omit it from the published site.
+exclude:
+  - table_sheet.html
