@@ -417,7 +417,7 @@ function mlbOuts(ip){
  if(!match)return null;
  return Number(match[1])*3+Number(match[2]||0);
 }
-function mlbDetailView(items,position){
+function mlbDetailView(items,position,officialTotals=null){
  if(!items.length)return "";
  const bat=items.filter(x=>x.kind==="batting").sort((a,b)=>Number(a.year)-Number(b.year)||a.club.localeCompare(b.club));
  const pit=items.filter(x=>x.kind==="pitching").sort((a,b)=>Number(a.year)-Number(b.year)||a.club.localeCompare(b.club));
@@ -439,6 +439,10 @@ function mlbDetailView(items,position){
   x.obp=share(add(x.h,x.bb,x.hbp),add(x.ab,x.bb,x.hbp,x.sf));
   x.slg=share(x.tb,x.ab);
   x.ops=add(x.obp,x.slg);
+  if(officialTotals?.kind==="batting"){
+   for(const [k,v] of Object.entries(officialTotals))
+    if(N(x[k])===null&&N(v)!==null)x[k]=v;
+  }
   return x;
  };
  const pitSum=()=>{
@@ -450,6 +454,10 @@ function mlbDetailView(items,position){
   x.ip=x.outs!==null?String(Math.floor(x.outs/3))+"."+(x.outs%3):null;
   x.era=x.outs>0&&x.er!==null?27*x.er/x.outs:null;
   x.whip=x.outs>0&&x.h!==null&&x.bb!==null?3*(x.h+x.bb)/x.outs:null;
+  if(officialTotals?.kind==="pitching"){
+   for(const [k,v] of Object.entries(officialTotals))
+    if(N(x[k])===null&&N(v)!==null)x[k]=v;
+  }
   return x;
  };
  const rc=x=>{
@@ -536,7 +544,7 @@ app.innerHTML=`<p class="breadcrumb"><a href="index.html">選手一覧</a> / 世
 
 `<section class="panel"><h2>基本情報</h2><dl class="details"><dt>生年月日</dt><dd>${d(p.dob)}</dd><dt>守備位置・投打</dt><dd>${d(p.pos)}／${d(p.throws)}投${d(p.bats)}打</dd><dt>出身校</dt><dd>${d(p.school)}</dd><dt>最終経歴(2026)</dt><dd>${d(p.club2026)}</dd></dl>${info(external(p.npbUrl,"NPB公式選手ページ"))}</section>`+
 npbDetailView(npbDetail,p.pos)+
-mlbDetailView(mlbYears,p.pos)+
+mlbDetailView(mlbYears,p.pos,mlb.careerTotals?.[id]||null)+
 
 `<section class="panel career-detail"><h2>所属・経歴</h2><p class="small muted">高校からの球歴を時系列順に掲載します（助っ人は学歴を省略）。NPBは育成期間・一軍未出場年度を含む在籍年度を表示し、高校・大学・社会人・NPB・独立・MLB（傘下を含む）・海外・他に分類しています。終了年は確認済みの在籍年度を表します。最新の所属は随時更新し、退団を断定するものではありません。</p>${table(["区分","所属・役職","開始","終了"],c.map(a=>[d(careerCategory(a)),d(careerClub(a)),d(a.start),d(a.end)]),"所属・経歴は未収録です.")}${c.filter(a=>a.activityNote).map(a=>`<p class="small muted">※${e(a.activityNote)}</p>`).join("")}</section>`+
 `<section class="panel"><h2>主要タイトル</h2>${summaries.length?`<ul class="award-summary">${summaries.map(x=>`<li>${e(x.name)} ${x.years.length}回（${e(compactYears(x.years))}）</li>`).join("")}</ul>`:`<p class="empty">該当する主要タイトルは、現在の収録データにありません。</p>`}<p class="small muted">NPB一軍のみ：MVP・沢村賞・長嶋賞・投手四冠・野手六冠・GG・B9・新人王を掲載しています。</p></section>`+
