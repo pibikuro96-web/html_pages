@@ -67,7 +67,7 @@ const seasonRows=x=>x.map(s=>statCells(s));
 function countTile(n,text){return `<div class="stat"><strong>${e(n)}</strong><span>${e(text)}</span></div>`}
 
 const NPB_NUMBER_FIELDS={
- battingGames:["season","games"],plateAppearances:["detail","pa"],atBats:["detail","ab"],
+ battingGames:["detail","officialGames"],plateAppearances:["detail","pa"],atBats:["detail","ab"],
  hits:["detail","hits"],doubles:["detail","doubles"],triples:["detail","triples"],runs:["detail","runs"],
  walks:["detail","walks"],battingStrikeouts:["detail","strikeoutsBat"],
  homeRuns:["season","hr"],rbi:["season","rbi"],sb:["season","sb"],
