@@ -519,10 +519,12 @@ function mlbDetailView(items,position){
  if(bat.length)chunks.push({kind:"bat",html:"<h3>MLB打撃成績</h3>"+display(bat,MLB_BAT_COLS,batValue,batSum)});
  if(pit.length)chunks.push({kind:"pit",html:"<h3>MLB投手成績</h3>"+display(pit,MLB_PITCH_COLS,pitchValue,pitSum)});
  if(String(position||"").includes("投"))chunks.sort((a,b)=>a.kind==="pit"?-1:b.kind==="pit"?1:0);
+ const sourceLinks=[...new Set(items.map(x=>x.source).filter(validUrl))];
  return '<section class="panel npb-detail mlb-detail"><h2>MLB年度別・通算成績</h2>'+
   '<p class="small muted">MLBレギュラーシーズンのみ。NPBと混算せず、年度・球団別の数値を表示します。横スクロールで全項目を確認できます。未収録は「—」です。</p>'+
   chunks.map(c=>c.html).join("")+
-  '<p class="small muted">MLB公式記録を基に収録。HPはMLBの公表項目でないため未表示。率はNPBと同じ桁数（打率等は.300、WHIPは1.00）で表示します。</p></section>';
+  '<p class="small muted">出典：MLB.com・Baseball Savant・Baseball-Reference（各行の確認済み数値）。HPはMLBでの統一公表項目ではないため「—」です。率はNPBと同じ桁数（打率等は.300、WHIPは1.00）で表示します。</p>'+
+  (sourceLinks.length?'<p class="small muted">記録資料：'+sourceLinks.map((url,i)=>external(url,"MLB成績資料"+(sourceLinks.length>1?" "+(i+1):""))).join("／")+'</p>':"")+'</section>';
 }
 
 async function profilePage(){
