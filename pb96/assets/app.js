@@ -400,7 +400,7 @@ function careerClub(a){
 }
 
 
-const MLB_BAT_COLS=["打率","試合","打席","打数","安打","二塁打","三塁打","本塁打","塁打","打点","本打率","得点","三振","三振率","四球","敬遠","死球","BB/K","犠打","犠飛","併殺","盗企数","盗塁","盗塁率","出塁率","長打率","OPS","RC","RC27"];
+const MLB_BAT_COLS=["打率","試合","打席","打数","安打","二塁打","三塁打","本塁打","塁打","打点","本打率","得点","三振","三振率","四球","敬遠","死球","BB/K","犠打","犠飛","併殺","失策","盗企数","盗塁","盗塁率","出塁率","長打率","OPS","RC","RC27"];
 const MLB_PITCH_COLS=["防御率","投球回","試合","登板","先発","勝率","勝","負","H","HP","S",
  "完封","完投","QS","QS率","HQS","HQS率","奪三振","奪三振率","四球","敬遠","死球",
  "四死球率","BB/9","K/BB","被犠打","被犠飛","打者","打数","被安打","被打率",
@@ -428,7 +428,7 @@ function mlbDetailView(items,position,officialTotals=null){
  const batSum=()=>{
   const x={year:"通算",club:"—"};
   for(const k of ["g","pa","ab","r","h","doubles","triples","hr","rbi","bb","ibb","k",
-    "sb","cs","hbp","sh","sf","tb","gidp"])x[k]=strict(bat,k);
+    "sb","cs","hbp","sh","sf","tb","gidp","errors"])x[k]=strict(bat,k);
   x.avg=share(x.h,x.ab);
   x.obp=share(add(x.h,x.bb,x.hbp),add(x.ab,x.bb,x.hbp,x.sf));
   x.slg=share(x.tb,x.ab);
@@ -442,7 +442,7 @@ function mlbDetailView(items,position,officialTotals=null){
  const pitSum=()=>{
   const x={year:"通算",club:"—"};
   for(const k of ["g","gs","w","l","sv","hold","h","r","er","hr","bb","k","bf","np",
-     "hbp","ibb","qs","wp","bk"])x[k]=strict(pit,k);
+     "hbp","ibb","qs","hqs","wp","bk","sh","sf","ab","cg","sho"])x[k]=strict(pit,k);
   const outs=pit.map(x=>mlbOuts(x.ip));
   x.outs=outs.length&&outs.every(v=>v!==null)?outs.reduce((a,b)=>a+b,0):null;
   x.ip=x.outs!==null?String(Math.floor(x.outs/3))+"."+(x.outs%3):null;
@@ -473,7 +473,7 @@ function mlbDetailView(items,position,officialTotals=null){
    case "三振率":return pct(N(x.k),N(x.pa));
    case "四球":return d(x.bb);case "敬遠":return d(x.ibb);case "死球":return d(x.hbp);
    case "BB/K":return rate(share(B,K),2,true);case "犠打":return d(x.sh);
-   case "犠飛":return d(x.sf);case "併殺":return d(x.gidp);
+   case "犠飛":return d(x.sf);case "併殺":return d(x.gidp);case "失策":return d(x.errors);
    case "盗企数":return d(attempt);case "盗塁":return d(x.sb);
    case "盗塁率":return pct(N(x.sb),attempt);case "出塁率":return rate(N(x.obp));
    case "長打率":return rate(N(x.slg));case "OPS":return rate(N(x.ops));
@@ -496,14 +496,15 @@ function mlbDetailView(items,position,officialTotals=null){
    case "HP":return "—";case "S":return d(x.sv);
    case "完封":return d(x.sho);case "完投":return d(x.cg);
    case "QS":return d(x.qs);case "QS率":return pct(N(x.qs),N(x.gs));
-   case "HQS":case "HQS率":return "—";
+   case "HQS":return d(x.hqs);case "HQS率":return pct(N(x.hqs),N(x.gs));
    case "奪三振":return d(x.k);
    case "奪三振率":return rate(share(N(x.k),o)===null?null:27*share(N(x.k),o),2,true);
    case "四球":return d(x.bb);case "敬遠":return d(x.ibb);case "死球":return d(x.hbp);
    case "四死球率":return pct(add(N(x.bb),N(x.hbp)),N(x.bf));
    case "BB/9":return rate(share(N(x.bb),o)===null?null:27*share(N(x.bb),o),2,true);
    case "K/BB":return rate(share(N(x.k),N(x.bb)),2,true);
-   case "打者":return d(x.bf);case "被安打":return d(x.h);
+   case "被犠打":return d(x.sh);case "被犠飛":return d(x.sf);
+   case "打者":return d(x.bf);case "打数":return d(x.ab);case "被安打":return d(x.h);
    case "被打率":return rate(N(x.avg));case "被本塁打":return d(x.hr);
    case "被本率":return rate(share(N(x.hr),o)===null?null:27*share(N(x.hr),o),2,true);
    case "WHIP":return rate(N(x.whip),2,true);case "暴投":return d(x.wp);
@@ -523,9 +524,9 @@ function mlbDetailView(items,position,officialTotals=null){
  if(String(position||"").includes("投"))chunks.sort((a,b)=>a.kind==="pit"?-1:b.kind==="pit"?1:0);
  const sourceLinks=[...new Set(items.map(x=>x.source).filter(validUrl))];
  return '<section class="panel npb-detail mlb-detail"><h2>MLB年度別・通算成績</h2>'+
-  '<p class="small muted">MLBレギュラーシーズンのみ。NPBと混算せず、年度・球団別の数値を表示します。横スクロールで全項目を確認できます。未収録は「—」です。</p>'+
+  '<p class="small muted">MLBレギュラーシーズンのメジャー公式戦のみです（MiLB・マイナー、オープン戦、ポストシーズン除外）。NPBと同じ列で年度・球団別・通算を表示します。QS/HQSはMLB公式の試合別投手記録から計算し、未確認は「—」です。</p>'+
   chunks.map(c=>c.html).join("")+
-  '<p class="small muted">出典：MLB.com・Baseball Savant・Baseball-Reference（各行の確認済み数値）。HPはMLBでの統一公表項目ではないため「—」です。率はNPBと同じ桁数（打率等は.300、WHIPは1.00）で表示します。</p>'+
+  '<p class="small muted">出典：MLB公式Stats API（レギュラーシーズンの球団別記録）。移籍年の合計行は重複計上せず、QS率・HQS率は達成数÷先発登板数×100で計算します。HP・FIPなど比較可能な公式値がない項目は「—」です。</p>'+
   (sourceLinks.length?'<p class="small muted">記録資料：'+sourceLinks.map((url,i)=>external(url,"MLB成績資料"+(sourceLinks.length>1?" "+(i+1):""))).join("／")+'</p>':"")+'</section>';
 }
 
