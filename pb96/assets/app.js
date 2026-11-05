@@ -227,7 +227,7 @@ function npbDetailView(records,position){
     runs:N(x.runs),hits:N(x.hits),doubles:N(x.doubles),triples:N(x.triples),
     hr:N(s.hr),totalBases:N(z.totalBases),rbi:N(s.rbi),sb:N(s.sb),
     caught:N(z.caughtStealing),bunts:N(z.sacBunts),flies:N(z.sacFlies),
-    bb:N(x.walks),hbp:N(z.hitByPitch),k:N(x.strikeoutsBat),gidp:N(z.gidp),
+    bb:N(x.walks),ibb:N(z.ibb),hbp:N(z.hitByPitch),k:N(x.strikeoutsBat),gidp:N(z.gidp),
     avg:N(s.avg),obp:N(x.obp),slg:N(x.slg),ops:N(x.ops)};
  };
  const pitchingData=r=>{
@@ -295,7 +295,7 @@ function npbDetailView(records,position){
     case "三塁打":return d(x.triples);case "本塁打":return d(x.hr);
     case "塁打":return d(x.totalBases);case "打点":return d(x.rbi);
     case "本打率":return rate(div(x.ab,x.hr),1,true);
-    case "得点":return d(x.runs);case "三振":return d(x.k);
+    case "得点":return d(x.runs);case "三振":return d(x.k);case "敬遠":return d(x.ibb);
     case "三振率":return percentage(x.k,x.pa);case "四球":return d(x.bb);
     case "死球":return d(x.hbp);case "BB/K":return rate(div(x.bb,x.k),2,true);
     case "犠打":return d(x.bunts);case "犠飛":return d(x.flies);
