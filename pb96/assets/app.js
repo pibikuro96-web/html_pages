@@ -571,7 +571,7 @@ async function mlbListPage(){
  '<div class="control-bar"><label>選手名・球団名<input id="mlb-q" type="search" placeholder="例：岡本、TOR"></label>'+
  '<label>年度<select id="mlb-year"><option value="">すべて</option>'+[...new Set(rows.map(x=>x.year))].sort((a,b)=>Number(a)-Number(b)).map(y=>'<option value="'+e(y)+'">'+e(y)+'</option>').join("")+'</select></label></div>'+
  '<p id="mlb-count" class="small muted"></p><div id="mlb-results"></div>'+
- info("MLB公式戦の年度・球団別数値を表示。NPB・MiLB・独立リーグは含みません。欠測を0とみなしません。個人ページではさらに多くの指標とMLB通算を確認できます。");
+ info("MLBメジャーのレギュラーシーズン公式戦のみ。MiLB・マイナー、オープン戦、ポストシーズンは除外します。移籍年は球団別に表示し、個人ページではNPBと同じ詳細列・MLB通算成績を表示します。");
  const q=app.querySelector("#mlb-q"),year=app.querySelector("#mlb-year"),counter=app.querySelector("#mlb-count"),target=app.querySelector("#mlb-results");
  const rate=(value,places=3)=>{const n=numeric(value);return n===null?"—":e(n.toFixed(places).replace(places===3?/^0\./:/^$/,"."));};
  function render(){
@@ -582,11 +582,11 @@ async function mlbListPage(){
    const name=x=>'<a href="player.html?id='+encodeURIComponent(x.id)+'">'+e(names.get(x.id)||x.id)+'</a>';
    const v=x=>d(x);
    target.innerHTML='<section class="panel"><h2>MLB打撃成績</h2>'+
-    table(["選手","年","球団","試合","打席","打数","打率","安打","本塁打","打点","盗塁","出塁率","長打率","OPS","資料"],
-      bat.map(x=>[name(x),v(x.year),v(x.club),v(x.g),v(x.pa),v(x.ab),rate(x.avg),v(x.h),v(x.hr),v(x.rbi),v(x.sb),rate(x.obp),rate(x.slg),rate(x.ops),external(x.source,"出典")||"—"]))+'</section>'+
+    table(["選手","年","球団","試合","打席","打数","打率","安打","二塁打","三塁打","本塁打","打点","四球","敬遠","三振","盗塁","出塁率","長打率","OPS","資料"],
+      bat.map(x=>[name(x),v(x.year),v(x.club),v(x.g),v(x.pa),v(x.ab),rate(x.avg),v(x.h),v(x.doubles),v(x.triples),v(x.hr),v(x.rbi),v(x.bb),v(x.ibb),v(x.k),v(x.sb),rate(x.obp),rate(x.slg),rate(x.ops),external(x.source,"出典")||"—"]))+'</section>'+
     '<section class="panel"><h2>MLB投手成績</h2>'+
-    table(["選手","年","球団","登板","先発","防御率","投球回","勝","敗","H","S","奪三振","WHIP","資料"],
-      pit.map(x=>[name(x),v(x.year),v(x.club),v(x.g),v(x.gs),rate(x.era,2),v(x.ip),v(x.w),v(x.l),v(x.hold),v(x.sv),v(x.k),rate(x.whip,2),external(x.source,"出典")||"—"]))+'</section>';
+    table(["選手","年","球団","登板","先発","QS","QS率","HQS","HQS率","防御率","投球回","勝","敗","H","S","奪三振","四球","敬遠","WHIP","資料"],
+      pit.map(x=>[name(x),v(x.year),v(x.club),v(x.g),v(x.gs),v(x.qs),x.gs?rate(100*x.qs/x.gs,1)+"%":"—",v(x.hqs),x.gs?rate(100*x.hqs/x.gs,1)+"%":"—",rate(x.era,2),v(x.ip),v(x.w),v(x.l),v(x.hold),v(x.sv),v(x.k),v(x.bb),v(x.ibb),rate(x.whip,2),external(x.source,"出典")||"—"]))+'</section>';
  }
  q.addEventListener("input",render);year.addEventListener("change",render);render();
 }
