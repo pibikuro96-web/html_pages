@@ -16,7 +16,7 @@
 .npb-detail .table-outer{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .npb-detail table{font-size:.8rem}
 .npb-detail th,.npb-detail td{padding:7px 8px}
-.npb-detail tbody tr:last-child td{background:#e9f2fa;font-weight:700}
+.npb-detail tbody tr:last-child:has(strong) td{background:#e9f2fa;font-weight:700}
 
 /* 国際大会の資料リンクと備考の文字サイズを統一。長文は折り返す */
 .international-detail table{font-size:.82rem;min-width:760px}
@@ -51,7 +51,7 @@
 .npb-detail th,.npb-detail td{padding:8px 10px;text-align:right;white-space:nowrap}
 .npb-detail th:nth-child(1),.npb-detail td:nth-child(1),
 .npb-detail th:nth-child(2),.npb-detail td:nth-child(2){text-align:left}
-.npb-detail tbody tr:last-child td{background:#e9f2fa;font-weight:750}
+.npb-detail tbody tr:last-child:has(strong) td{background:#e9f2fa;font-weight:750}
 /* 所属・経歴：列の内容に応じて幅を確保し、長い球団名・役職のみ折り返し */
 .career-detail .table-outer{width:fit-content;max-width:100%;-webkit-overflow-scrolling:touch}
 .career-detail table{width:max-content;min-width:0;table-layout:auto;font-size:.82rem}
@@ -65,3 +65,6 @@
  .career-detail th,.career-detail td{padding:7px 6px;font-size:.78rem}
  .career-detail th:nth-child(2),.career-detail td:nth-child(2){max-width:27ch;min-width:100px}
 }
+
+/* NPB在籍のみの年度は、公式一軍成績がないことを区別する */
+.npb-unplayed-mark{font-size:.7rem;color:#64798c;font-weight:600;white-space:nowrap}
