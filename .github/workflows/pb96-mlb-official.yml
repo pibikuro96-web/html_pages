@@ -1,0 +1,27 @@
+name: "PB96 official MLB regular-season rebuild"
+on:
+  push:
+    paths:
+      - ".github/workflows/pb96-mlb-official.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch verified MLB-only seasonal stats and game logs
+        run: python tools/pb96_mlb_official_import.py
+      - name: Commit verified MLB season data and audit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pb96/data/mlb_extended.json pb96/data/mlb_import_audit.json
+          git diff --cached --quiet || (git commit -m "Rebuild PB96 major league-only MLB batting/pitching stats from official API" && git push)
