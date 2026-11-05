@@ -239,7 +239,7 @@ function npbDetailView(records,position){
     k:N(x.strikeoutsPitch),bb:N(x.walksPitch),hbp:N(z.hitBatters),
     batters:N(z.battersFaced),hits:N(x.hitsAllowed),hr:N(z.homeRunsAllowed),
     wp:N(z.wildPitches),balk:N(z.balks),runs:N(z.runsAllowed),
-    earned:N(x.earnedRuns),whip:N(x.whip),qs:N(z.qs),hqs:null,ibb:N(z.ibb),opponentAvg:N(z.opponentAvg),
+    earned:N(x.earnedRuns),whip:N(x.whip),qs:N(z.qs),hqs:N(z.hqs),ibb:N(z.ibb),opponentAvg:N(z.opponentAvg),
     sacBunts:N(z.sacBuntsAllowed),sacFlies:N(z.sacFliesAllowed),ab:N(z.opponentAtBats),pitches:N(z.pitches),fip:N(z.fip)};
  };
  const battings=bat.map(battingData),pitchings=pit.map(pitchingData);
