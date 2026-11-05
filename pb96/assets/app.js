@@ -14,7 +14,7 @@ const table=(cols,items,empty="該当する記録はありません。")=>items.
 async function load(name){const r=await fetch("data/"+name+".json",{cache:"no-store"});if(!r.ok)throw Error(name+" のデータを取得できません（HTTP "+r.status+"）");return await r.json();}
 function info(s){return `<p class="small muted">${s}</p>`}
 function title(t,subtitle=""){return `<div class="page-title"><h1>${e(t)}</h1>${subtitle?`<p>${e(subtitle)}</p>`:""}</div>`;}
-function statCells(s){return [d(s.year),d(s.league),d(s.club),d(s.games),d(s.avg),d(s.hr),d(s.rbi),d(s.sb),d(s.pitchGames),d(s.era),d(s.wins),d(s.losses),d(s.hp),d(s.saves),d(s.innings),external(s.source,"出典")||"—"];}
+function statCells(s){return [d(s.year),d(s.league),d(s.club),d(s.games),d(s.avg),d(s.hr),d(s.rbi),d(s.sb),d(s.pitchGames),d(s.era),d(s.wins),d(s.losses),d(s.hp),d(s.saves),d(s.innings),d(s.pitchingStrikeouts),d(s.whip),d(s.recordScope),external(s.source,"出典")||"—"]; }
 
 const MAIN_TITLE_ORDER=["MVP","沢村賞","長嶋賞","最多勝","最優秀防御率","最多奪三振","最高勝率","首位打者","本塁打王","打点王","最多安打","最高出塁率","盗塁王","GG","B9","新人王"];
 function mainTitleName(item){
@@ -62,7 +62,7 @@ function compactYears(years){
   push();return groups.join("、");
 }
 
-const seasonCols=["年度","リーグ","球団","野手試合","打率","本塁打","打点","盗塁","投手登板","防御率","勝","敗","HP","S","投球回","資料"];
+const seasonCols=["年度","リーグ","球団","野手試合","打率","本塁打","打点","盗塁","投手登板","防御率","勝","敗","HP","S","投球回","奪三振","WHIP","対象大会","資料"];
 const seasonRows=x=>x.map(s=>statCells(s));
 function countTile(n,text){return `<div class="stat"><strong>${e(n)}</strong><span>${e(text)}</span></div>`}
 
@@ -552,7 +552,7 @@ const rows=allRows.filter(r=>r.league!=="NPB"&&r.league!=="MLB");
 const leagueList=[...new Set(rows.map(r=>r.league))].sort((a,b)=>String(a).localeCompare(String(b),"ja"));
 app.innerHTML=title("独立・その他リーグ年度別成績","MLBは専用タブで表示します。こちらは独立リーグなどNPB・MLB以外の年度別成績です。")+
 `<div class="control-bar"><label>選手名・球団名<input id="q" type="search" placeholder="例：岡本、DeNA"></label><label>リーグ<select id="league"><option value="">すべて</option>${leagueList.map(l=>`<option value="${e(l)}">${e(l)}</option>`).join("")}</select></label><label>年度<select id="year"><option value="">すべて</option>${[...new Set(rows.map(r=>r.year))].sort((a,b)=>Number(a)-Number(b)).map(y=>`<option>${e(y)}</option>`).join("")}</select></label></div><p id="count" class="small muted"></p><div id="results"></div>`+
-info("現在の収録："+leagueList.map(l=>l+" "+rows.filter(r=>r.league===l).length+"行").join("／")+"。その他海外リーグは確認済みの成績が追加され次第ここに表示します。未入力値を0とみなしません。");
+info("現在の収録："+leagueList.map(l=>l+" "+rows.filter(r=>r.league===l).length+"行").join("／")+"。その他海外リーグは確認済みの成績が追加され次第ここに表示します。独立リーグの対象大会の範囲が異なる場合があるため注記を確認してください。未入力値を0とみなしません。");
 const q=app.querySelector("#q"),league=app.querySelector("#league"),year=app.querySelector("#year"),count=app.querySelector("#count"),target=app.querySelector("#results");
 function render(){
 const text=q.value.normalize("NFKC").toLocaleLowerCase("ja");let x=rows.filter(r=>(r.name+" "+r.club).normalize("NFKC").toLocaleLowerCase("ja").includes(text)&&(!league.value||r.league===league.value)&&(!year.value||r.year===year.value)).sort(yearsAsc);
