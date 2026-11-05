@@ -43,3 +43,25 @@
   .leaders-table th:nth-child(4),.leaders-table td:nth-child(4){width:23%}
   .leaders-table .rank-number{min-width:1.8em}
 }
+
+/* 選手詳細：年度別NPB成績は打撃・投手の必要列だけを表示 */
+.npb-detail h3{font-size:.98rem;margin:18px 0 9px}
+.npb-detail .table-outer + h3{margin-top:22px}
+.npb-detail table{width:max-content;min-width:0;font-size:.83rem;font-variant-numeric:tabular-nums}
+.npb-detail th,.npb-detail td{padding:8px 10px;text-align:right;white-space:nowrap}
+.npb-detail th:nth-child(1),.npb-detail td:nth-child(1),
+.npb-detail th:nth-child(2),.npb-detail td:nth-child(2){text-align:left}
+.npb-detail tbody tr:last-child td{background:#e9f2fa;font-weight:750}
+/* 所属・経歴：列の内容に応じて幅を確保し、長い球団名・役職のみ折り返し */
+.career-detail .table-outer{width:fit-content;max-width:100%;-webkit-overflow-scrolling:touch}
+.career-detail table{width:max-content;min-width:0;table-layout:auto;font-size:.82rem}
+.career-detail th,.career-detail td{padding:7px 10px}
+.career-detail th:nth-child(1),.career-detail td:nth-child(1){width:70px;min-width:65px}
+.career-detail th:nth-child(2),.career-detail td:nth-child(2){width:auto;min-width:110px;max-width:34ch;white-space:normal;overflow-wrap:anywhere}
+.career-detail th:nth-child(3),.career-detail td:nth-child(3),
+.career-detail th:nth-child(4),.career-detail td:nth-child(4){min-width:74px;white-space:nowrap;font-variant-numeric:tabular-nums}
+@media(max-width:600px){
+ .npb-detail th,.npb-detail td{padding:7px 8px;font-size:.79rem}
+ .career-detail th,.career-detail td{padding:7px 6px;font-size:.78rem}
+ .career-detail th:nth-child(2),.career-detail td:nth-child(2){max-width:27ch;min-width:100px}
+}
