@@ -233,7 +233,7 @@ function npbDetailView(records,position){
  const pitchingData=r=>{
    const s=r.season,x=r.detail||{},z=r.pitching||{};
    return {year:s.year,club:s.club,games:officialGames(r),gamesPitch:N(s.pitchGames),
-    starts:N(x.starts),gamesFinished:N(z.gamesFinished),outs:N(s.outs),era:N(s.era),
+    starts:N(x.starts),outs:N(s.outs),era:N(s.era),
     wins:N(s.wins),losses:N(s.losses),holds:N(z.holds),hp:N(s.hp),saves:N(s.saves),
     complete:N(z.completeGames),shutouts:N(z.shutouts),noWalks:N(z.noWalks),
     k:N(x.strikeoutsPitch),bb:N(x.walksPitch),hbp:N(z.hitBatters),
@@ -263,7 +263,7 @@ function npbDetailView(records,position){
    const t=sumObject(pitchings,["games","gamesPitch","outs","wins","losses","holds","hp",
     "saves","complete","shutouts","noWalks","k","bb","hbp","batters",
     "hits","hr","wp","balk","runs","earned"]);
-   t.starts=sum(pitchings,"starts");t.gamesFinished=sum(pitchings,"gamesFinished");t.qs=sum(pitchings,"qs");t.hqs=sum(pitchings,"hqs");
+   t.starts=sum(pitchings,"starts");t.qs=sum(pitchings,"qs");t.hqs=sum(pitchings,"hqs");
    t.ibb=sum(pitchings,"ibb");t.sacBunts=sum(pitchings,"sacBunts");
    t.sacFlies=sum(pitchings,"sacFlies");t.ab=sum(pitchings,"ab");
    t.pitches=sum(pitchings,"pitches");
@@ -283,7 +283,7 @@ function npbDetailView(records,position){
  const rcOuts=x=>["ab","hits","caught","gidp","bunts","flies"].every(k=>N(x[k])!==null)?
    x.ab-x.hits+x.caught+x.gidp+x.bunts+x.flies:null;
  const BatCols=["打率","試合","打席","打数","安打","二塁打","三塁打","本塁打","塁打","打点","本打率","得点","三振","三振率","四球","敬遠","死球","BB/K","犠打","犠飛","併殺","失策","盗企数","盗塁","盗塁率","出塁率","長打率","OPS","RC","RC27"];
- const PitchCols=["防御率","投球回","試合","登板","先発","交代完了","勝率","勝","負","H","HP","S",
+ const PitchCols=["防御率","投球回","試合","登板","先発","勝率","勝","負","H","HP","S",
   "完封","完投","QS","QS率","HQS","HQS率","奪三振","奪三振率","四球","敬遠","死球",
   "四死球率","BB/9","K/BB","被犠打","被犠飛","打者","打数","被安打","被打率",
   "被本塁打","被本率","WHIP","FIP","暴投","ボーク","球数","失点","自責点"];
@@ -316,7 +316,7 @@ function npbDetailView(records,position){
     case "防御率":return rate(x.era,2,true);
     case "投球回":return inningsLabel(x.outs);
     case "試合":return d(x.games);case "登板":return d(x.gamesPitch);
-    case "先発":return d(x.starts);case "交代完了":return d(x.gamesFinished);
+    case "先発":return d(x.starts);
     case "勝率":return N(x.wins)!==null&&N(x.losses)!==null?
       rate(div(x.wins,x.wins+x.losses)):"—";
     case "勝":return d(x.wins);case "負":return d(x.losses);
