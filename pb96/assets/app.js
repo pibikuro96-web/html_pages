@@ -239,8 +239,8 @@ function npbDetailView(records,position){
     k:N(x.strikeoutsPitch),bb:N(x.walksPitch),hbp:N(z.hitBatters),
     batters:N(z.battersFaced),hits:N(x.hitsAllowed),hr:N(z.homeRunsAllowed),
     wp:N(z.wildPitches),balk:N(z.balks),runs:N(z.runsAllowed),
-    earned:N(x.earnedRuns),whip:N(x.whip),qs:null,hqs:null,ibb:null,
-    sacBunts:null,sacFlies:null,ab:null,pitches:null,fip:null};
+    earned:N(x.earnedRuns),whip:N(x.whip),qs:N(z.qs),hqs:null,ibb:N(z.ibb),opponentAvg:N(z.opponentAvg),
+    sacBunts:N(z.sacBuntsAllowed),sacFlies:N(z.sacFliesAllowed),ab:N(z.opponentAtBats),pitches:N(z.pitches),fip:N(z.fip)};
  };
  const battings=bat.map(battingData),pitchings=pit.map(pitchingData);
  const sumObject=(objects,fields)=>{
@@ -333,7 +333,7 @@ function npbDetailView(records,position){
     case "K/BB":return rate(div(x.k,x.bb),2,true);
     case "被犠打":return d(x.sacBunts);case "被犠飛":return d(x.sacFlies);
     case "打者":return d(x.batters);case "打数":return d(x.ab);
-    case "被安打":return d(x.hits);case "被打率":return rate(div(x.hits,x.ab));
+    case "被安打":return d(x.hits);case "被打率":return rate(x.opponentAvg!==null?x.opponentAvg:div(x.hits,x.ab));
     case "被本塁打":return d(x.hr);
     case "被本率":return rate(div(x.hr,x.outs)===null?null:27*div(x.hr,x.outs),2,true);
     case "WHIP":return rate(x.whip,2,true);
@@ -374,7 +374,7 @@ function npbDetailView(records,position){
   '<p class="small muted">右にスクロールすると全項目を確認できます。率の1未満は先頭0を省略（例：.300、.950）、WHIPは小数第2位まで表示します。※はNPB在籍のみの年度で、通算には算入しません。</p>'+
   (parts.length?parts.map(x=>x.html).join(""):
     '<p class="empty">NPB一軍成績は未収録です。</p>')+
-  '<p class="small muted">算出指標：本打率＝打数÷本塁打、三振率＝三振÷打席、奪三振率・BB/9・被本率＝各数値×9÷投球回、盗塁率＝盗塁÷盗企数、RC・RC27はRC2方式。未収録のQS・HQS・敬遠・特殊本塁打・球数などは「—」です。HとHP、試合と登板は別記録です。</p></section>';
+  '<p class="small muted">2026年投手の先発・QS・敬遠・被打率・FIPはNPB公式の登板数と照合した追加資料から補完。FIPは資料掲載の算出方法に依存します。算出指標：本打率＝打数÷本塁打、三振率＝三振÷打席、奪三振率・BB/9・被本率＝各数値×9÷投球回、盗塁率＝盗塁÷盗企数、RC・RC27はRC2方式。未収録のQS・HQS・敬遠・特殊本塁打・球数などは「—」です。HとHP、試合と登板は別記録です。</p></section>';
 }
 
 function careerCategory(a){
