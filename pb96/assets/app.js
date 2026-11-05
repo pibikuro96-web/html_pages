@@ -14,7 +14,7 @@ const table=(cols,items,empty="該当する記録はありません。")=>items.
 async function load(name){const r=await fetch("data/"+name+".json",{cache:"no-store"});if(!r.ok)throw Error(name+" のデータを取得できません（HTTP "+r.status+"）");return await r.json();}
 function info(s){return `<p class="small muted">${s}</p>`}
 function title(t,subtitle=""){return `<div class="page-title"><h1>${e(t)}</h1>${subtitle?`<p>${e(subtitle)}</p>`:""}</div>`;}
-function statCells(s){return [d(s.year),d(s.league),d(s.club),d(s.games),d(s.avg),d(s.hr),d(s.rbi),d(s.sb),d(s.pitchGames),d(s.era),d(s.wins),d(s.losses),d(s.hp),d(s.saves),d(s.innings),d(s.pitchingStrikeouts),d(s.whip),d(s.recordScope),external(s.source,"出典")||"—"]; }
+function statCells(s){return [d(s.year),d(s.league),d(s.club),d(s.games),d(s.avg),d(s.hr),d(s.rbi),d(s.sb),d(s.pitchGames),d(s.era),d(s.wins),d(s.losses),d(s.hp),d(s.saves),d(s.innings),d(s.pitchingStrikeouts),d(s.whip),external(s.source,"出典")||"—"]; }
 
 const MAIN_TITLE_ORDER=["MVP","沢村賞","長嶋賞","最多勝","最優秀防御率","最多奪三振","最高勝率","首位打者","本塁打王","打点王","最多安打","最高出塁率","盗塁王","GG","B9","新人王"];
 function mainTitleName(item){
@@ -62,7 +62,7 @@ function compactYears(years){
   push();return groups.join("、");
 }
 
-const seasonCols=["年度","リーグ","球団","野手試合","打率","本塁打","打点","盗塁","投手登板","防御率","勝","敗","HP","S","投球回","奪三振","WHIP","対象大会","資料"];
+const seasonCols=["年度","リーグ","球団","野手試合","打率","本塁打","打点","盗塁","投手登板","防御率","勝","敗","HP","S","投球回","奪三振","WHIP","資料"];
 const seasonRows=x=>x.map(s=>statCells(s));
 function countTile(n,text){return `<div class="stat"><strong>${e(n)}</strong><span>${e(text)}</span></div>`}
 
@@ -227,13 +227,13 @@ function npbDetailView(records,position){
     runs:N(x.runs),hits:N(x.hits),doubles:N(x.doubles),triples:N(x.triples),
     hr:N(s.hr),totalBases:N(z.totalBases),rbi:N(s.rbi),sb:N(s.sb),
     caught:N(z.caughtStealing),bunts:N(z.sacBunts),flies:N(z.sacFlies),
-    bb:N(x.walks),ibb:N(z.ibb),hbp:N(z.hitByPitch),k:N(x.strikeoutsBat),gidp:N(z.gidp),
+    bb:N(x.walks),ibb:N(z.ibb),hbp:N(z.hitByPitch),k:N(x.strikeoutsBat),gidp:N(z.gidp),errors:N(z.errors),
     avg:N(s.avg),obp:N(x.obp),slg:N(x.slg),ops:N(x.ops)};
  };
  const pitchingData=r=>{
    const s=r.season,x=r.detail||{},z=r.pitching||{};
    return {year:s.year,club:s.club,games:officialGames(r),gamesPitch:N(s.pitchGames),
-    starts:N(x.starts),outs:N(s.outs),era:N(s.era),
+    starts:N(x.starts),gamesFinished:N(z.gamesFinished),outs:N(s.outs),era:N(s.era),
     wins:N(s.wins),losses:N(s.losses),holds:N(z.holds),hp:N(s.hp),saves:N(s.saves),
     complete:N(z.completeGames),shutouts:N(z.shutouts),noWalks:N(z.noWalks),
     k:N(x.strikeoutsPitch),bb:N(x.walksPitch),hbp:N(z.hitBatters),
@@ -250,7 +250,7 @@ function npbDetailView(records,position){
  };
  const batTotals=()=>{
    const t=sumObject(battings,["games","pa","ab","runs","hits","doubles","triples","hr",
-    "totalBases","rbi","sb","caught","bunts","flies","bb","hbp","k","gidp"]);
+    "totalBases","rbi","sb","caught","bunts","flies","bb","ibb","hbp","k","gidp","errors"]);
    t.avg=div(t.hits,t.ab);
    const denom=[t.ab,t.bb,t.hbp,t.flies].every(x=>x!==null)?t.ab+t.bb+t.hbp+t.flies:null;
    const numer=[t.hits,t.bb,t.hbp].every(x=>x!==null)?t.hits+t.bb+t.hbp:null;
@@ -263,7 +263,7 @@ function npbDetailView(records,position){
    const t=sumObject(pitchings,["games","gamesPitch","outs","wins","losses","holds","hp",
     "saves","complete","shutouts","noWalks","k","bb","hbp","batters",
     "hits","hr","wp","balk","runs","earned"]);
-   t.starts=sum(pitchings,"starts");t.qs=sum(pitchings,"qs");t.hqs=sum(pitchings,"hqs");
+   t.starts=sum(pitchings,"starts");t.gamesFinished=sum(pitchings,"gamesFinished");t.qs=sum(pitchings,"qs");t.hqs=sum(pitchings,"hqs");
    t.ibb=sum(pitchings,"ibb");t.sacBunts=sum(pitchings,"sacBunts");
    t.sacFlies=sum(pitchings,"sacFlies");t.ab=sum(pitchings,"ab");
    t.pitches=sum(pitchings,"pitches");
@@ -282,8 +282,8 @@ function npbDetailView(records,position){
  };
  const rcOuts=x=>["ab","hits","caught","gidp","bunts","flies"].every(k=>N(x[k])!==null)?
    x.ab-x.hits+x.caught+x.gidp+x.bunts+x.flies:null;
- const BatCols=["打率","試合","打席","打数","安打","二塁打","三塁打","本塁打","塁打","打点","本打率","得点","三振","三振率","四球","敬遠","死球","BB/K","犠打","犠飛","併殺","盗企数","盗塁","盗塁率","出塁率","長打率","OPS","RC","RC27"];
- const PitchCols=["防御率","投球回","試合","登板","先発","勝率","勝","負","H","HP","S",
+ const BatCols=["打率","試合","打席","打数","安打","二塁打","三塁打","本塁打","塁打","打点","本打率","得点","三振","三振率","四球","敬遠","死球","BB/K","犠打","犠飛","併殺","失策","盗企数","盗塁","盗塁率","出塁率","長打率","OPS","RC","RC27"];
+ const PitchCols=["防御率","投球回","試合","登板","先発","交代完了","勝率","勝","負","H","HP","S",
   "完封","完投","QS","QS率","HQS","HQS率","奪三振","奪三振率","四球","敬遠","死球",
   "四死球率","BB/9","K/BB","被犠打","被犠飛","打者","打数","被安打","被打率",
   "被本塁打","被本率","WHIP","FIP","暴投","ボーク","球数","失点","自責点"];
@@ -299,7 +299,7 @@ function npbDetailView(records,position){
     case "三振率":return percentage(x.k,x.pa);case "四球":return d(x.bb);
     case "死球":return d(x.hbp);case "BB/K":return rate(div(x.bb,x.k),2,true);
     case "犠打":return d(x.bunts);case "犠飛":return d(x.flies);
-    case "併殺":return d(x.gidp);
+    case "併殺":return d(x.gidp);case "失策":return d(x.errors);
     case "盗企数":return N(x.sb)!==null&&N(x.caught)!==null?d(x.sb+x.caught):"—";
     case "盗塁":return d(x.sb);
     case "盗塁率":return N(x.sb)!==null&&N(x.caught)!==null?percentage(x.sb,x.sb+x.caught):"—";
@@ -316,7 +316,7 @@ function npbDetailView(records,position){
     case "防御率":return rate(x.era,2,true);
     case "投球回":return inningsLabel(x.outs);
     case "試合":return d(x.games);case "登板":return d(x.gamesPitch);
-    case "先発":return d(x.starts);
+    case "先発":return d(x.starts);case "交代完了":return d(x.gamesFinished);
     case "勝率":return N(x.wins)!==null&&N(x.losses)!==null?
       rate(div(x.wins,x.wins+x.losses)):"—";
     case "勝":return d(x.wins);case "負":return d(x.losses);
@@ -374,7 +374,7 @@ function npbDetailView(records,position){
   '<p class="small muted">右にスクロールすると全項目を確認できます。率の1未満は先頭0を省略（例：.300、.950）、WHIPは小数第2位まで表示します。※はNPB在籍のみの年度で、通算には算入しません。</p>'+
   (parts.length?parts.map(x=>x.html).join(""):
     '<p class="empty">NPB一軍成績は未収録です。</p>')+
-  '<p class="small muted">2026年投手の先発・QS・敬遠・被打率・FIPはNPB公式の登板数と照合した追加資料から補完。FIPは資料掲載の算出方法に依存します。算出指標：本打率＝打数÷本塁打、三振率＝三振÷打席、奪三振率・BB/9・被本率＝各数値×9÷投球回、盗塁率＝盗塁÷盗企数、RC・RC27はRC2方式。未収録のQS・HQS・敬遠・特殊本塁打・球数などは「—」です。HとHP、試合と登板は別記録です。</p></section>';
+  '<p class="small muted">先発・交代完了・QS・敬遠・失策などの一部項目はNPB公式または追加資料の確認済み年度だけ表示します。未確認の数値は0ではなく「—」で、全年度が未確認なら通算も「—」です。FIPは資料掲載の算出方法に依存します。算出指標：本打率＝打数÷本塁打、三振率＝三振÷打席、奪三振率・BB/9・被本率＝各数値×9÷投球回、盗塁率＝盗塁÷盗企数、RC・RC27はRC2方式。未収録のQS・HQS・敬遠・特殊本塁打・球数などは「—」です。HとHP、試合と登板は別記録です。</p></section>';
 }
 
 function careerCategory(a){
@@ -552,7 +552,7 @@ const rows=allRows.filter(r=>r.league!=="NPB"&&r.league!=="MLB");
 const leagueList=[...new Set(rows.map(r=>r.league))].sort((a,b)=>String(a).localeCompare(String(b),"ja"));
 app.innerHTML=title("独立・その他リーグ年度別成績","MLBは専用タブで表示します。こちらは独立リーグなどNPB・MLB以外の年度別成績です。")+
 `<div class="control-bar"><label>選手名・球団名<input id="q" type="search" placeholder="例：岡本、DeNA"></label><label>リーグ<select id="league"><option value="">すべて</option>${leagueList.map(l=>`<option value="${e(l)}">${e(l)}</option>`).join("")}</select></label><label>年度<select id="year"><option value="">すべて</option>${[...new Set(rows.map(r=>r.year))].sort((a,b)=>Number(a)-Number(b)).map(y=>`<option>${e(y)}</option>`).join("")}</select></label></div><p id="count" class="small muted"></p><div id="results"></div>`+
-info("現在の収録："+leagueList.map(l=>l+" "+rows.filter(r=>r.league===l).length+"行").join("／")+"。その他海外リーグは確認済みの成績が追加され次第ここに表示します。独立リーグの対象大会の範囲が異なる場合があるため注記を確認してください。未入力値を0とみなしません。");
+info("現在の収録："+leagueList.map(l=>l+" "+rows.filter(r=>r.league===l).length+"行").join("／")+"。その他海外リーグは確認済みの成績が追加され次第ここに表示します。独立リーグでは大会ごとに集計範囲が異なる場合があるため注記を確認してください。未入力値を0とみなしません。");
 const q=app.querySelector("#q"),league=app.querySelector("#league"),year=app.querySelector("#year"),count=app.querySelector("#count"),target=app.querySelector("#results");
 function render(){
 const text=q.value.normalize("NFKC").toLocaleLowerCase("ja");let x=rows.filter(r=>(r.name+" "+r.club).normalize("NFKC").toLocaleLowerCase("ja").includes(text)&&(!league.value||r.league===league.value)&&(!year.value||r.year===year.value)).sort(yearsAsc);
