@@ -68,3 +68,17 @@
 
 /* NPB在籍のみの年度は、公式一軍成績がないことを区別する */
 .npb-unplayed-mark{font-size:.7rem;color:#64798c;font-weight:600;white-space:nowrap}
+
+/* NPB詳細成績：横長の全項目表でも年度・球団を確認できるよう固定 */
+.npb-detail .table-outer{overflow-x:auto;position:relative;overscroll-behavior-inline:contain}
+.npb-detail table{width:max-content;min-width:100%;table-layout:auto;font-size:.78rem}
+.npb-detail th,.npb-detail td{min-width:52px;padding:7px 9px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.npb-detail th:nth-child(1),.npb-detail td:nth-child(1),
+.npb-detail th:nth-child(2),.npb-detail td:nth-child(2){text-align:left}
+.npb-detail th:nth-child(1),.npb-detail td:nth-child(1){position:sticky;left:0;min-width:80px;width:80px;z-index:2}
+.npb-detail th:nth-child(2),.npb-detail td:nth-child(2){position:sticky;left:80px;min-width:78px;width:78px;z-index:2;box-shadow:2px 0 3px -2px #9aafbe}
+.npb-detail thead th:nth-child(-n+2){z-index:4;background:#e7edf4}
+.npb-detail tbody td:nth-child(-n+2){background:#fff}
+.npb-detail tbody tr:nth-child(even) td:nth-child(-n+2){background:#fafbfd}
+.npb-detail tbody tr:last-child:has(strong) td:nth-child(-n+2){background:#e9f2fa}
+@media(max-width:600px){.npb-detail table{font-size:.74rem}.npb-detail th,.npb-detail td{padding:6px 7px}}
