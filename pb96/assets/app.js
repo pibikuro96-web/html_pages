@@ -561,6 +561,35 @@ target.innerHTML=table(["選手",...seasonCols],x.map(s=>[`<a href="player.html?
 }
 for(const n of [q,league,year])n.addEventListener(n===q?"input":"change",render);render();
 }
+
+async function mlbListPage(){
+ const [mlb,players]=await Promise.all([load("mlb_extended"),load("players")]);
+ const names=new Map(players.map(p=>[p.id,p.name]));
+ const rows=[...(mlb.rows||[])].sort((a,b)=>Number(a.year)-Number(b.year)||String(a.id).localeCompare(String(b.id))||String(a.club).localeCompare(String(b.club)));
+ app.innerHTML=title("MLB年度別成績","1996年度生まれの収録選手に限定したMLBレギュラーシーズンの球団別成績です。")+
+ '<div class="control-bar"><label>選手名・球団名<input id="mlb-q" type="search" placeholder="例：岡本、TOR"></label>'+
+ '<label>年度<select id="mlb-year"><option value="">すべて</option>'+[...new Set(rows.map(x=>x.year))].sort((a,b)=>Number(a)-Number(b)).map(y=>'<option value="'+e(y)+'">'+e(y)+'</option>').join("")+'</select></label></div>'+
+ '<p id="mlb-count" class="small muted"></p><div id="mlb-results"></div>'+
+ info("MLB公式戦の年度・球団別数値を表示。NPB・MiLB・独立リーグは含みません。欠測を0とみなしません。個人ページではさらに多くの指標とMLB通算を確認できます。");
+ const q=app.querySelector("#mlb-q"),year=app.querySelector("#mlb-year"),counter=app.querySelector("#mlb-count"),target=app.querySelector("#mlb-results");
+ const rate=(value,places=3)=>{const n=numeric(value);return n===null?"—":e(n.toFixed(places).replace(places===3?/^0\./:/^$/,"."));};
+ function render(){
+   const term=q.value.normalize("NFKC").toLocaleLowerCase("ja");
+   const chosen=rows.filter(x=>((names.get(x.id)||"")+" "+x.club).normalize("NFKC").toLocaleLowerCase("ja").includes(term)&&(!year.value||x.year===year.value));
+   counter.textContent=chosen.length+" / "+rows.length+" 行、"+new Set(chosen.map(x=>x.id)).size+"人";
+   const bat=chosen.filter(x=>x.kind==="batting"),pit=chosen.filter(x=>x.kind==="pitching");
+   const name=x=>'<a href="player.html?id='+encodeURIComponent(x.id)+'">'+e(names.get(x.id)||x.id)+'</a>';
+   const v=x=>d(x);
+   target.innerHTML='<section class="panel"><h2>MLB打撃成績</h2>'+
+    table(["選手","年","球団","試合","打席","打数","打率","安打","本塁打","打点","盗塁","出塁率","長打率","OPS","資料"],
+      bat.map(x=>[name(x),v(x.year),v(x.club),v(x.g),v(x.pa),v(x.ab),rate(x.avg),v(x.h),v(x.hr),v(x.rbi),v(x.sb),rate(x.obp),rate(x.slg),rate(x.ops),external(x.source,"出典")||"—"]))+'</section>'+
+    '<section class="panel"><h2>MLB投手成績</h2>'+
+    table(["選手","年","球団","登板","先発","防御率","投球回","勝","敗","H","S","奪三振","WHIP","資料"],
+      pit.map(x=>[name(x),v(x.year),v(x.club),v(x.g),v(x.gs),rate(x.era,2),v(x.ip),v(x.w),v(x.l),v(x.hold),v(x.sv),v(x.k),rate(x.whip,2),external(x.source,"出典")||"—"]))+'</section>';
+ }
+ q.addEventListener("input",render);year.addEventListener("change",render);render();
+}
+
 async function comparePage(){
 const [players,seasons]=await Promise.all([load("players"),load("seasons")]);
 const opts=players.map(p=>`<option value="${e(p.id)}">${e(p.name)}（${e(p.id)}）</option>`).join("");
@@ -689,7 +718,7 @@ app.innerHTML=title("データの見方","公開データの対象・更新方�
 ``;
 }
 async function init(){
-try{if(page==="index")await listPage();else if(page==="player")await profilePage();else if(page==="seasons")await seasonPage();else if(page==="compare")await comparePage();else if(page==="international")await internationalPage();else if(page==="rankings")await rankingsPage();else if(page==="about")await aboutPage();else app.textContent="不明なページです。";}
+try{if(page==="index")await listPage();else if(page==="player")await profilePage();else if(page==="seasons")await seasonPage();else if(page==="mlb")await mlbListPage();else if(page==="compare")await comparePage();else if(page==="international")await internationalPage();else if(page==="rankings")await rankingsPage();else if(page==="about")await aboutPage();else app.textContent="不明なページです。";}
 catch(err){app.innerHTML=`<section class="panel"><h2>データを読み込めませんでした</h2><p>${e(err.message)}</p><p>GitHub Pages上で開いているか、dataフォルダが配置されているか確認してください。</p></section>`;console.error(err);}
 }
 init();
