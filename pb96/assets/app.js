@@ -194,44 +194,69 @@ function npbDetailView(records,position){
  if(!records.length)return "";
  const list=[...records].sort((a,b)=>Number(a.season.year)-Number(b.season.year)||
   String(a.season.club).localeCompare(String(b.season.club),"ja"));
- const bat=list.filter(r=>(numeric(r.detail?.pa)??0)>0||(numeric(r.season.games)??0)>0);
+ // NPB打撃表の試合数は、打席が0でも記録される。投手登板数とは別に表示する。
+ const bat=list.filter(r=>numeric(r.detail?.officialGames)!==null||
+   numeric(r.detail?.pa)!==null||numeric(r.season.games)!==null);
  const pit=list.filter(r=>(numeric(r.season.pitchGames)??0)>0);
  const tBat=sumNPB(bat),tPit=sumNPB(pit);
- const club=x=>d(teamAbbrev(x));
- const percent=(win,lose)=>{
-   const w=numeric(win),l=numeric(lose);
-   return w===null||l===null||w+l===0?"—":ratioLabel(w/(w+l));
+ const extra=(rows,kind,key)=>d(sumSupplement(rows,kind,key));
+ const showTeam=x=>d(teamAbbrev(x));
+ const officialGames=r=>numeric(r.detail?.officialGames)??numeric(r.season.games);
+ const ratio=(wins,losses)=>{
+   const w=numeric(wins),l=numeric(losses);
+   return w===null||l===null||w+l<=0?"—":ratioLabel(w/(w+l));
  };
- const rate=x=>{
-   const n=numeric(x);
-   return n===null?"—":ratioLabel(n);
+ const sumGames=(rows)=>{
+   const all=rows.map(officialGames);
+   return all.length&&all.every(n=>n!==null)?all.reduce((a,b)=>a+b,0):null;
  };
- const battingCols=["年度","球団","試合数","打率","本塁打","打点","安打","盗塁","出塁率"];
- const pitchingCols=["年度","球団","防御率","登板","勝率","勝利","HP","セーブ","奪三振","投球回"];
- const battingRows=bat.map(r=>{
-  const a=r.season,x=r.detail||{};
-  return [d(a.year),club(a.club),d(a.games),rate(a.avg),d(a.hr),
-   d(a.rbi),d(x.hits),d(a.sb),rate(x.obp)];
- });
- const pitchingRows=pit.map(r=>{
-  const a=r.season,x=r.detail||{};
-  return [d(a.year),club(a.club),d(a.era),d(a.pitchGames),percent(a.wins,a.losses),
-   d(a.wins),d(a.hp),d(a.saves),d(x.strikeoutsPitch),d(a.innings)];
- });
- if(bat.length)battingRows.push(["<strong>通算</strong>","—",d(tBat.battingGames),
-  ratioLabel(tBat.avg),d(tBat.homeRuns),d(tBat.rbi),d(tBat.hits),
-  d(tBat.sb),ratioLabel(tBat.obp)]);
- if(pit.length)pitchingRows.push(["<strong>通算</strong>","—",ratioLabel(tPit.era,2),
-  d(tPit.pitcherGames),percent(tPit.wins,tPit.losses),d(tPit.wins),
-  d(tPit.hp),d(tPit.saves),d(tPit.pitchingStrikeouts),inningsLabel(tPit.outs)]);
+ const batColumns=["年","球団","試合","打席","打数","得点","安打","二塁打","三塁打","本塁打","塁打","打点","盗塁","盗塁刺","犠打","犠飛","四球","死球","三振","併殺打","打率","出塁率","長打率","OPS"];
+ const pitchColumns=["年","球団","試合","登板","完投","完封","無四球","投球回","勝","敗","勝率","HP","S","対戦打者","被安打","被本塁打","与四球","与死球","奪三振","暴投","ボーク","失点","自責点","防御率","WHIP"];
+ const battingRow=r=>{
+   const a=r.season,x=r.detail||{},z=r.batting||{};
+   return [d(a.year),showTeam(a.club),d(officialGames(r)),d(x.pa),d(x.ab),d(x.runs),
+     d(x.hits),d(x.doubles),d(x.triples),d(a.hr),d(z.totalBases),d(a.rbi),
+     d(a.sb),d(z.caughtStealing),d(z.sacBunts),d(z.sacFlies),d(x.walks),
+     d(z.hitByPitch),d(x.strikeoutsBat),d(z.gidp),d(a.avg),d(x.obp),d(x.slg),d(x.ops)];
+ };
+ const pitchingRow=r=>{
+   const a=r.season,x=r.detail||{},z=r.pitching||{};
+   return [d(a.year),showTeam(a.club),d(officialGames(r)),d(a.pitchGames),
+     d(z.completeGames),d(z.shutouts),d(z.noWalks),d(a.innings),
+     d(a.wins),d(a.losses),ratio(a.wins,a.losses),d(a.hp),d(a.saves),
+     d(z.battersFaced),d(x.hitsAllowed),d(z.homeRunsAllowed),d(x.walksPitch),
+     d(z.hitBatters),d(x.strikeoutsPitch),d(z.wildPitches),d(z.balks),
+     d(z.runsAllowed),d(x.earnedRuns),d(a.era),d(x.whip)];
+ };
+ const battingTotal=["<strong>通算</strong>","—",d(sumGames(bat)),
+  d(tBat.plateAppearances),d(tBat.atBats),d(tBat.runs),d(tBat.hits),
+  d(tBat.doubles),d(tBat.triples),d(tBat.homeRuns),
+  extra(bat,"batting","totalBases"),d(tBat.rbi),d(tBat.sb),
+  extra(bat,"batting","caughtStealing"),extra(bat,"batting","sacBunts"),
+  extra(bat,"batting","sacFlies"),d(tBat.walks),
+  extra(bat,"batting","hitByPitch"),d(tBat.battingStrikeouts),
+  extra(bat,"batting","gidp"),ratioLabel(tBat.avg),
+  ratioLabel(tBat.obp),ratioLabel(tBat.slg),ratioLabel(tBat.ops)];
+ const pitchingTotal=["<strong>通算</strong>","—",d(sumGames(pit)),
+  d(tPit.pitcherGames),extra(pit,"pitching","completeGames"),
+  extra(pit,"pitching","shutouts"),extra(pit,"pitching","noWalks"),
+  inningsLabel(tPit.outs),d(tPit.wins),d(tPit.losses),
+  ratio(tPit.wins,tPit.losses),d(tPit.hp),d(tPit.saves),
+  extra(pit,"pitching","battersFaced"),d(tPit.hitsAllowed),
+  extra(pit,"pitching","homeRunsAllowed"),d(tPit.pitchingWalks),
+  extra(pit,"pitching","hitBatters"),d(tPit.pitchingStrikeouts),
+  extra(pit,"pitching","wildPitches"),extra(pit,"pitching","balks"),
+  extra(pit,"pitching","runsAllowed"),d(tPit.earnedRuns),
+  ratioLabel(tPit.era,2),ratioLabel(tPit.whip)];
  const parts=[];
- if(bat.length)parts.push({kind:"bat",html:"<h3>打撃成績</h3>"+table(battingCols,battingRows)});
- if(pit.length)parts.push({kind:"pit",html:"<h3>投手成績</h3>"+table(pitchingCols,pitchingRows)});
+ if(bat.length)parts.push({kind:"bat",html:"<h3>打撃成績</h3>"+table(batColumns,[...bat.map(battingRow),battingTotal])});
+ if(pit.length)parts.push({kind:"pit",html:"<h3>投手成績</h3>"+table(pitchColumns,[...pit.map(pitchingRow),pitchingTotal])});
  if(String(position||"").includes("投"))parts.sort((a,b)=>a.kind==="pit"?-1:b.kind==="pit"?1:0);
- return '<section class="panel npb-detail"><h2>NPB年度別・通算成績</h2>'+
-  '<p class="small muted">NPB一軍成績。年度と球団を併記し、最下段に通算を表示しています。未取得の項目は「—」です。</p>'+
-  (parts.length?parts.map(x=>x.html).join(""):'<p class="empty">NPB一軍成績は未収録です。</p>')+
-  '</section>';
+ let html='<section class="panel npb-detail"><h2>NPB年度別・通算成績</h2>'+
+  '<p class="small muted">NPB一軍。詳細項目は全収録。試合はNPB打撃表の公式値、登板は投手表の公式値であり、一致しない年度もあります。通算は最下段、欠測は「—」です。</p>';
+ if(parts.length)html+=parts.map(x=>x.html).join("");
+ else html+='<p class="empty">NPB一軍成績は未収録です。</p>';
+ return html+"</section>";
 }
 
 function careerCategory(a){
