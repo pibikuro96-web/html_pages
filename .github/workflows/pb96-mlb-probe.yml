@@ -1,0 +1,23 @@
+name: "PB96 MLB API one-time format probe"
+on:
+  push:
+    paths:
+      - ".github/workflows/pb96-mlb-probe.yml"
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python tools/pb96_mlb_api_probe.py
+      - name: Commit probe result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pb96/data/mlb_api_probe.json
+          git diff --cached --quiet || (git commit -m "Save one-time MLB API response audit" && git push)
