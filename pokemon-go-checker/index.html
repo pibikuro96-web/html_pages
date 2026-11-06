@@ -57,7 +57,7 @@
 /* Pokémon GO personal collection tracker. No accounts or analytics. */
 (() => {
   'use strict';
-  const VERSION = '1.1.0';
+  const VERSION = '1.2.0';
   const STORE_KEY = 'pogo-personal-collection-v1';
   const CACHE_KEY = 'pogo-catalog-cache-v1';
   const PAGE_SIZE = 120;
@@ -163,15 +163,22 @@
     }
     return null;
   }
+  function costumeCatalogCode(form,dex,assetCodes){
+    const proto=String(form?.proto||'');
+    return Object.entries(assetCodes||{}).filter(([code,info])=>
+      code.startsWith('f:') && proto.endsWith('_'+code.slice(2)) && (info.dex||[]).includes(Number(dex))
+    ).sort((a,b)=>b[0].length-a[0].length)[0]?.[0]||null;
+  }
   function isCostumeForm(form,dex,assetCodes){
     const proto=String(form?.proto||'');
-    if(form?.isCostume)return true;
-    if(Object.entries(assetCodes||{}).some(([c,v])=>c.startsWith('f:')&&proto.endsWith('_'+c.slice(2))&&(v.dex||[]).includes(dex)))return true;
-    // Seasonal deerling etc. are natural forms, not costumes.
-    return dex===25 && /(?:GOFEST|WCS_20|COSTUME|HOLIDAY_20|ANNIVERSARY_20|FALL_20|WINTER_20|HORIZONS|FLYING_|ADVENTURE_HAT|GOTOUR_20|VISOR_20|PXP_20|K_2026)/.test(proto);
+    if(!proto||/_DEPRECATED(?:_|$)/.test(proto))return false;
+    if(form?.isCostume||costumeCatalogCode(form,dex,assetCodes))return true;
+    // Event variants without isCostume are not natural form changes.
+    // Unqualified seasons (e.g. DEERLING_SPRING) remain genuine alternate forms.
+    return /(?:^|_)(?:COPY_20\d{2}|COSTUME_20\d{2}|SPRING_20\d{2}|FALL_20\d{2}|WINTER_20\d{2}|SUMMER_20\d{2}|HOLIDAY_20\d{2}|HALLOWEEN_20\d{2}|GOFEST_20\d{2}|GOTOUR_20\d{2}|WCS_20\d{2}|ANNIVERSARY_20\d{2}|TSHIRT_\d+|FLYING_(?:\d+|[A-Z])|GOGGLES_20\d{2}|SWIM_20\d{2}|PXP_20\d{2}|K_20\d{2})(?:_|$)/.test(proto);
   }
   function costumeName(human){
-    const names={'Party Hat':'パーティハット','Witch Hat':'ハロウィン帽子','Santa Hat':'サンタ帽子','Holiday Outfit':'冬の衣装','Summer Hat':'サマースタイル','Straw Hat':'麦わら帽子','Detective Hat':'探偵帽子','Detective Hat 2023':'名探偵帽子（2023）','Flower Hat':'花飾り','Cake Hat':'ケーキ帽子','Safari Hat':'サファリ帽子','Top Hat':'シルクハット','Red Party Hat':'赤いパーティハット','Rayquaza Hat':'レックウザ帽子','Charizard Hat':'リザードン帽子','Lucario Hat':'ルカリオ帽子','Umbreon Hat':'ブラッキー帽子','Meloetta Hat':'メロエッタ帽子','Cherry Blossom':'桜飾り','Original Cap':'サトシ帽子','World Cap':'ワールドキャップ','New Year\'s Hat':'新年帽子','Rock Star':'ハードロック','Pop Star':'アイドル','Libre':'マスクド','Ph.D.':'ドクター','Clone Pikachu':'コピーピカチュウ','Mimikyu Costume':'ミミッキュ仮装','Flying Pikachu':'そらをとぶ','Kariyushi Shirt':'かりゆしウェア','Cowboy Hat':'カウボーイ帽子','Halloween Hat':'ハロウィン帽子','Flower Crown':'花冠','Sunglasses':'サングラス','Holiday Wreath':'ホリデーリース','Sun Crown':'太陽の冠','Moon Crown':'月の冠','Marathon Visor':'マラソンバイザー','Willow\'s Lab Coat':'ウィロー博士の助手','Fossil Costume':'化石衣装','Party Hat':'パーティハット'};
+    const names={'Party Hat':'パーティハット','Witch Hat':'ハロウィン帽子','Santa Hat':'サンタ帽子','Holiday Outfit':'冬の衣装','Summer Hat':'サマースタイル','Straw Hat':'麦わら帽子','Detective Hat':'探偵帽子','Detective Hat 2023':'名探偵帽子（2023）','Flower Hat':'花飾り','Cake Hat':'ケーキ帽子','Safari Hat':'サファリ帽子','Top Hat':'シルクハット','Red Party Hat':'赤いパーティハット','Rayquaza Hat':'レックウザ帽子','Charizard Hat':'リザードン帽子','Lucario Hat':'ルカリオ帽子','Umbreon Hat':'ブラッキー帽子','Meloetta Hat':'メロエッタ帽子','Cherry Blossom':'桜飾り','Original Cap':'サトシ帽子','World Cap':'ワールドキャップ','New Year\'s Hat':'新年帽子','Rock Star':'ハードロック','Pop Star':'アイドル','Libre':'マスクド','Ph.D.':'ドクター','Clone Pikachu':'コピーピカチュウ','Copy 2019':'コピー','Spring 2020':'パーティハット（2020）','Goggles 2026':'ゴーグル（2026）','Swim 2025':'水泳衣装（2025）','Mimikyu Costume':'ミミッキュ仮装','Flying Pikachu':'そらをとぶ','Kariyushi Shirt':'かりゆしウェア','Cowboy Hat':'カウボーイ帽子','Halloween Hat':'ハロウィン帽子','Flower Crown':'花冠','Sunglasses':'サングラス','Holiday Wreath':'ホリデーリース','Sun Crown':'太陽の冠','Moon Crown':'月の冠','Marathon Visor':'マラソンバイザー','Willow\'s Lab Coat':'ウィロー博士の助手','Fossil Costume':'化石衣装','Party Hat':'パーティハット'};
     return names[human]||human;
   }
   function spriteUrl(entry,shiny=false){
@@ -215,9 +222,8 @@
       const fIds=Array.isArray(p?.forms)?p.forms:[];
       for(const fid of fIds){
         const f=formById.get(fid);if(!f||!f.proto)continue;
-        // Cosmetic forms go into the costume sheets, not the regional/form sheets.
-        const inCostumeCatalog=Object.entries(assets.codes||{}).some(([code,c])=>code.startsWith('f:') && String(f.proto).endsWith('_'+code.slice(2)) && (c.dex||[]).includes(dex));
-        if(isCostumeForm(f,dex,assets.codes))continue;
+        // Deprecated internal forms are not collectible.
+        if(/_DEPRECATED(?:_|$)/.test(f.proto)||isCostumeForm(f,dex,assets.codes))continue;
         if(f.formName==='Normal'||String(f.proto).endsWith('_NORMAL'))continue;
         const label=formLabel(f,jpForms);
         const variantId=`${dex}:${f.proto}`;
@@ -254,20 +260,34 @@
         const category=Number(dex)===25?'costumepika':'costumeother';
         const ownSpeciesRelease=hasReleased?Boolean(releasedData[dex]):true;
         const image=goFile(dex,code.replace(':',''));
-        all.push(makeEntry(category,dex,name,title,id,{released:ownSpeciesRelease,english:eng,artBase:assets.assetBase,artFile:file,goFile:image,orderRank:dex===25&&pikaCodes.includes(code)?pikaCodes.indexOf(code):9999,uncertain:true,verifiedRelease:false}));
+        const linked=(p?.forms||[]).map(fid=>formById.get(fid))
+          .filter(f=>f&&costumeCatalogCode(f,dex,codes)===code)
+          .map(f=>dex+':'+f.proto);
+        // The 2020 party-hat overlay also has a separate SPRING_2020 form record.
+        if(code==='c:JAN_2020_NOEVOLVE'&&[20,202,265].includes(Number(dex)))
+          for(const fid of p?.forms||[]){const f=formById.get(fid);if(f?.proto?.endsWith('_SPRING_2020'))linked.push(dex+':'+f.proto);}
+        all.push(makeEntry(category,dex,name,title,id,{released:ownSpeciesRelease,english:eng,artBase:assets.assetBase,artFile:file,goFile:image,legacyFormKeys:[...new Set(linked)],orderRank:dex===25&&pikaCodes.includes(code)?pikaCodes.indexOf(code):9999,uncertain:true,verifiedRelease:false}));
       }
     }
-    // Some GO form costumes are not yet in the mined-art catalogue; list them as candidates.
+    // Event forms missing from the mined shiny-art catalogue must still be classified as costumes.
+    // Unpictured, unflagged records may be unreleased placeholders and are not shown.
     for(const [dex,p] of fromPokemon){
-      for(const fid of p.forms||[]){const f=formById.get(fid);if(!f||!isCostumeForm(f,dex,codes))continue;
-        const code=`form-${f.proto}`,id=`costume:${dex}:${code}`;
-        const inCostumeCatalog=Object.entries(codes).some(([key,c])=>key.startsWith('f:') && String(f.proto).endsWith('_'+key.slice(2)) && (c.dex||[]).includes(dex));
-        if(inCostumeCatalog)continue;
+      for(const fid of p.forms||[]){
+        const f=formById.get(fid);
+        if(!f?.proto||/_DEPRECATED(?:_|$)/.test(f.proto)||!isCostumeForm(f,dex,codes))continue;
+        if(costumeCatalogCode(f,dex,codes))continue;
+        if(f.proto.endsWith('_SPRING_2020')&&[20,202,265].includes(Number(dex))&&codes['c:JAN_2020_NOEVOLVE']?.dex.includes(dex))continue;
+        const file=resolveGoFormFile(dex,f,p.pokemonName);
+        if(!file&&!f.isCostume)continue;
+        const id=`costume:${dex}:form-${f.proto}`;
         if(selected.has(id))continue;
+        if(file&&all.some(x=>isCostume(x.category)&&x.dex===dex&&x.goFile===file))continue;
         selected.add(id);
         const name=jpPokemon['poke_'+dex]||p.pokemonName||`No.${dex}`;
         const rel=hasReleased?Boolean(releasedData[dex]):true;
-        all.push(makeEntry(dex===25?'costumepika':'costumeother',dex,name,costumeName(formLabel(f,jpForms)),id,{released:rel,uncertain:true,verifiedRelease:false,english:p.pokemonName,goFile:resolveGoFormFile(dex,f,p.pokemonName),orderRank:9999}));
+        all.push(makeEntry(dex===25?'costumepika':'costumeother',dex,name,costumeName(formLabel(f,jpForms)),id,
+          {released:rel,uncertain:true,verifiedRelease:false,english:p.pokemonName,goFile:file,
+            legacyFormKeys:[dex+':'+f.proto],orderRank:9999}));
       }
     }
     return all;
@@ -282,6 +302,46 @@
       return (a.orderRank??9999)-(b.orderRank??9999)||a.sub.localeCompare(b.sub,'ja');
     }
     return a.sub.localeCompare(b.sub,'ja');
+  }
+  function migrateLegacyFormChecks(rows){
+    let changed=false;
+    for(const row of rows){
+      if(!isCostume(row.category))continue;
+      for(const stem of row.legacyFormKeys||[]){
+        const legacyNormal='form:'+stem,legacyShiny='shinyform:'+stem;
+        if(state.owned[legacyNormal]){state.owned[row.id+':normal']=true;changed=true;}
+        if(state.owned[legacyShiny]){state.owned[row.id+':shiny']=true;changed=true;}
+        if(state.excluded[legacyNormal]||state.excluded[legacyShiny]){state.excluded[row.id]=true;changed=true;}
+        for(const old of [legacyNormal,legacyShiny]){
+          if(old in state.owned){delete state.owned[old];changed=true;}
+          if(old in state.excluded){delete state.excluded[old];changed=true;}
+        }
+      }
+    }
+    if(changed)persist();
+    return changed;
+  }
+  function auditCatalog(rows){
+    const ids=new Set(),imageKeys=new Map(),unique=[];
+    for(const row of rows){
+      if(ids.has(row.id))continue;
+      ids.add(row.id);
+      const art=isCostume(row.category)?row.goFile||null:null;
+      if(art){
+        const k=row.category+':'+row.dex+':'+art;
+        if(imageKeys.has(k)){
+          const existing=imageKeys.get(k);
+          existing.legacyFormKeys=[...new Set([...(existing.legacyFormKeys||[]),...(row.legacyFormKeys||[])])];
+          continue;
+        }
+        imageKeys.set(k,row);
+      }
+      unique.push(row);
+    }
+    const formStems=new Set(unique.filter(x=>x.category==='forms'||x.category==='shinyforms').map(x=>x.dex+':'+x.formProto));
+    const overlap=unique.filter(x=>isCostume(x.category)&&(x.legacyFormKeys||[]).some(k=>formStems.has(k)));
+    if(overlap.length)console.warn('Event form remains in two tables',overlap.map(x=>x.id));
+    return unique;
   }
   function addCustomToCatalog(list){
     const ids=new Set(list.map(x=>x.id));
@@ -303,8 +363,8 @@
     if(rows.length<100){rows=fallback();sourceStatus='fallback';}
     else sourceStatus=failed.length?'partial':'ready';
     addCustomToCatalog(rows);
-    const ids=new Set(),dedup=[];
-    for(const row of rows){if(!ids.has(key(row))){dedup.push(row);ids.add(key(row));}}
+    const dedup=auditCatalog(rows);
+    migrateLegacyFormChecks(dedup);
     data=dedup.sort(sortEntries);
     if(sourceStatus==='ready'){els.status.className='notice success';els.status.innerHTML='<span class="pulse"></span>データを読み込みました。入手チェックはこのブラウザに保存されます。';}
     else if(sourceStatus==='partial'){els.status.className='notice warn';els.status.textContent=`一部のデータ提供元に接続できませんでした（${failed.join('、')}）。表示件数や集計値が不完全な可能性があります。`;}
