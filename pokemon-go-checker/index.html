@@ -17,6 +17,10 @@
 .costume-images .sprite small{font-size:9px;color:#6d8199;line-height:12px}
 .art-missing{font-size:10px;color:#a4aec0;line-height:1.3;text-align:center;padding:4px}
 @media(max-width:600px){.workspace-actions{flex-direction:column;align-items:stretch}.workspace-actions .button{font-size:10px;padding:7px 9px}}
+
+.summary-grid{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}
+.costume-foot .mini-check.gender-female.checked{background:#f4e7fa;border-color:#d49de0;color:#854492}
+.costume-foot .mini-check:disabled{opacity:.42;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -51,13 +55,13 @@
   </div>
   <dialog id="order-dialog" class="dialog"><div class="modal"><div class="dialog-heading"><h2>ピカチュウの並び順</h2><button type="button" class="close" id="order-close">×</button></div><p class="muted">Googleスプレッドシートの衣装名を上から順に1行1件で貼り付けます。名称が一致する項目だけ先頭から指定順に並べ、残りはその後ろに表示します。ここでの変更はこの端末に保存されます。</p><textarea id="pika-order-input" rows="11" style="width:100%;border:1px solid #dce5f1;border-radius:10px;padding:10px;font:inherit;font-size:13px" placeholder="例：パーティハット&#10;サンタ帽子&#10;ハロウィン帽子"></textarea><p id="order-feedback" class="feedback" aria-live="polite"></p><div class="setting-actions"><button type="button" id="order-apply" class="button primary">一致した順序を反映</button><button type="button" id="order-clear" class="button secondary">指定を解除</button></div></div></dialog>
   <dialog id="settings-dialog" class="dialog"><form method="dialog" class="modal"><div class="dialog-heading"><h2>データ管理</h2><button aria-label="閉じる" class="close" value="cancel">×</button></div><p class="muted">チェック結果はこの端末のブラウザに保存されます。別端末には自動同期されません。定期的にバックアップしてください。</p><div class="setting-actions"><button id="export-json" type="button" class="button primary">バックアップを保存（JSON）</button><button id="import-json" type="button" class="button secondary">バックアップを読み込む</button><input type="file" accept=".json,application/json" id="import-file" hidden /><button id="export-csv" type="button" class="button secondary">チェック表を書き出す（CSV）</button><button id="refresh-data" type="button" class="button secondary">最新のデータを再取得</button></div><div class="divider"></div><div class="detail">入手判定：<strong>一度でも入手したことがある</strong><br>通常・フォルム・色違い：<strong>すべて独立</strong><br>各カードの「集計対象外」で達成率の分母から除外できます。</div><div class="divider"></div><button type="button" id="reset-checks" class="button danger">チェック結果を全削除</button><p id="settings-feedback" class="feedback" aria-live="polite"></p></form></dialog>
-  <dialog id="add-dialog" class="dialog"><form id="add-form" class="modal"><div class="dialog-heading"><h2>項目を手動追加</h2><button type="button" id="add-close" class="close" aria-label="閉じる">×</button></div><p class="muted">データ提供元にない衣装や新しいフォルムを追加できます。</p><label class="field">カテゴリ<select id="custom-cat" required><option value="normal">通常</option><option value="forms">別フォルム</option><option value="shiny">色違い（通常）</option><option value="shinyforms">色違い（別フォルム）</option><option value="costumepika">衣装（ピカチュウ）</option><option value="costumeother">衣装（その他）</option></select></label><label class="field">全国図鑑番号<input type="number" id="custom-dex" min="1" max="9999" placeholder="例：25" required /></label><label class="field">ポケモン名<input type="text" id="custom-name" maxlength="60" placeholder="例：ピカチュウ" required /></label><label class="field">フォルム／衣装の名称<input type="text" id="custom-sub" maxlength="100" placeholder="例：イベント衣装" /></label><button type="submit" class="button primary">この項目を追加</button><p id="add-feedback" class="feedback" aria-live="polite"></p></form></dialog>
+  <dialog id="add-dialog" class="dialog"><form id="add-form" class="modal"><div class="dialog-heading"><h2>項目を手動追加</h2><button type="button" id="add-close" class="close" aria-label="閉じる">×</button></div><p class="muted">データ提供元にない衣装や新しいフォルムを追加できます。</p><label class="field">カテゴリ<select id="custom-cat" required><option value="normal">通常</option><option value="forms">別フォルム</option><option value="shiny">色違い（通常）</option><option value="shinyforms">色違い（別フォルム）</option><option value="costumepika">衣装（ピカチュウ）</option><option value="costumeother">衣装（その他）</option><option value="gender">オス・メス差分</option></select></label><label class="field">全国図鑑番号<input type="number" id="custom-dex" min="1" max="9999" placeholder="例：25" required /></label><label class="field">ポケモン名<input type="text" id="custom-name" maxlength="60" placeholder="例：ピカチュウ" required /></label><label class="field">フォルム／衣装の名称<input type="text" id="custom-sub" maxlength="100" placeholder="例：イベント衣装" /></label><button type="submit" class="button primary">この項目を追加</button><p id="add-feedback" class="feedback" aria-live="polite"></p></form></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script>
 /* Pokémon GO personal collection tracker. No accounts or analytics. */
 (() => {
   'use strict';
-  const VERSION = '1.2.1';
+  const VERSION = '1.3.0';
   const STORE_KEY = 'pogo-personal-collection-v1';
   const CACHE_KEY = 'pogo-catalog-cache-v1';
   const PAGE_SIZE = 120;
@@ -66,6 +70,7 @@
     {id:'forms', title:'別フォルム・リージョン',short:'フォルム',subtitle:'姿・地域違い',note:'アンノーン・リージョンフォームなどを通常種と独立して管理します。'},
     {id:'shiny',title:'色違い・通常',short:'色違い',subtitle:'通常の色違い',note:'通常種の色違いを通常種とは独立してチェックします。'},
     {id:'shinyforms',title:'色違い・別フォルム',short:'色違いフォルム',subtitle:'姿・地域違い',note:'フォルムごとの色違いもそれぞれ独立しています。'},
+    {id:'gender',title:'オス・メス差分',short:'オス・メス',subtitle:'性差のある姿',note:'本編で性別によって姿が違うポケモンを、オスとメス別々にチェックします。'},
     {id:'costumepika',title:'衣装・ピカチュウ',short:'衣装ピカチュウ',subtitle:'通常色＋色違い',note:'衣装ごとに「通常」「色違い」を別々にチェックします。'},
     {id:'costumeother',title:'衣装・その他',short:'衣装その他',subtitle:'通常色＋色違い',note:'ピカチュウ以外のコスチュームを管理します。'},
   ];
@@ -76,6 +81,7 @@
   const HAIL_RAW='https://raw.githubusercontent.com/Hailey-Ross/hailsDotGO/main/internal/costumes/';
   const POGO='https://pogoapi.net/api/v1/';
   const GO_ASSET_MANIFEST='./assets-index.json';
+  const GENDER_DATA='./gender-data.json';
   const SPRITE='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
   const FALLBACK_SPECIES={1:'フシギダネ',4:'ヒトカゲ',7:'ゼニガメ',25:'ピカチュウ',26:'ライチュウ',37:'ロコン',38:'キュウコン',52:'ニャース',58:'ガーディ',100:'ビリリダマ',133:'イーブイ',201:'アンノーン',327:'パッチール',351:'ポワルン',386:'デオキシス',479:'ロトム',487:'ギラティナ',492:'シェイミ',550:'バスラオ',585:'シキジカ',586:'メブキジカ',641:'トルネロス',642:'ボルトロス',645:'ランドロス',666:'ビビヨン',678:'ニャオニクス',720:'フーパ',741:'オドリドリ',746:'ヨワシ',774:'メテノ',800:'ネクロズマ',849:'ストリンダー',869:'マホイップ',888:'ザシアン',889:'ザマゼンタ',901:'ガチグマ',978:'シャリタツ',999:'コレクレー'};
   const FALLBACK_FORM_SPEC={201:['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','!','?'],37:['アローラ'],38:['アローラ'],386:['アタック','ディフェンス','スピード'],351:['たいよう','あまみず','ゆきぐも'],327:['模様1','模様2','模様3','模様4','模様5','模様6','模様7','模様8','模様9']};
@@ -86,7 +92,9 @@
   const gen=dex=>GENS.findIndex((limit,i)=>i>0 && dex<=limit) || 9;
   const key=x=>x.id;
   const isCostume=cat=>cat==='costumepika'||cat==='costumeother';
-  const isOwned=x=>isCostume(x.category) ? Boolean(state.owned[x.id+':normal']||state.owned[x.id+':shiny']) : Boolean(state.owned[x.id]);
+  const isGender=cat=>cat==='gender';
+  const isDual=cat=>isCostume(cat)||isGender(cat);
+  const isOwned=x=>isGender(x.category)?Boolean(state.owned[x.id+':male']||state.owned[x.id+':female']):isCostume(x.category)?Boolean(state.owned[x.id+':normal']||state.owned[x.id+':shiny']):Boolean(state.owned[x.id]);
   const eligibility=x=>!state.excluded[x.id] && (x.released!==false || isOwned(x));
   let state=readStorage();
   let active='normal', visibleLimit=PAGE_SIZE, data=[], sourceStatus='loading', toastTimer=0;
@@ -125,6 +133,7 @@
     for(const [num,name] of Object.entries(FALLBACK_SPECIES)){
       const dex=Number(num);all.push(makeEntry('normal',dex,name,'',`normal:${dex}`,{released:true}));all.push(makeEntry('shiny',dex,name,'',`shiny:${dex}`,{released:true}));
     }
+    all.push(makeEntry('gender',25,'ピカチュウ','性別による姿の違い','gender:25:base',{maleFile:goFile(25,''),femaleFile:goFile(25,'g2')}));
     for(const [num,labels] of Object.entries(FALLBACK_FORM_SPEC))for(const label of labels){
       const dex=Number(num),id=`manualseed:${dex}:${label}`;
       all.push(makeEntry('forms',dex,FALLBACK_SPECIES[dex],label,`form:${id}`,{released:true}));
@@ -224,6 +233,9 @@
         const f=formById.get(fid);if(!f||!f.proto)continue;
         // Deprecated internal forms are not collectible.
         if(/_DEPRECATED(?:_|$)/.test(f.proto)||isCostumeForm(f,dex,assets.codes))continue;
+        if(/_(?:FEMALE|MALE)$/.test(f.proto))continue;
+        // UNOWN_S is the alphabet letter; the others are GO-internal special forms.
+        if(/_S$/.test(f.proto)&&!f.proto.startsWith('UNOWN_'))continue;
         if(f.formName==='Normal'||String(f.proto).endsWith('_NORMAL'))continue;
         const label=formLabel(f,jpForms);
         const variantId=`${dex}:${f.proto}`;
@@ -281,7 +293,10 @@
     for(const [dex,p] of fromPokemon){
       for(const fid of p.forms||[]){
         const f=formById.get(fid);
-        if(!f?.proto||/_DEPRECATED(?:_|$)/.test(f.proto)||!isCostumeForm(f,dex,codes))continue;
+        if(!f?.proto||/_DEPRECATED(?:_|$)/.test(f.proto))continue;
+        const apex=[249,250].includes(dex)&&f.proto.endsWith('_S');
+        if(/_S$/.test(f.proto)&&!apex)continue;
+        if(!apex&&!isCostumeForm(f,dex,codes))continue;
         if(costumeCatalogCode(f,dex,codes))continue;
         if(f.proto.endsWith('_SPRING_2020')&&[20,202,265].includes(Number(dex))&&codes['c:JAN_2020_NOEVOLVE']?.dex.includes(dex))continue;
         const file=resolveGoFormFile(dex,f,p.pokemonName);
@@ -292,12 +307,46 @@
         selected.add(id);
         const name=jpPokemon['poke_'+dex]||p.pokemonName||`No.${dex}`;
         const rel=hasReleased?Boolean(releasedData[dex]):true;
-        all.push(makeEntry(dex===25?'costumepika':'costumeother',dex,name,costumeName(formLabel(f,jpForms)),id,
+        all.push(makeEntry(dex===25?'costumepika':'costumeother',dex,name,apex?'シャドウAPEX（GO独自）':costumeName(formLabel(f,jpForms)),id,
           {released:rel,uncertain:true,verifiedRelease:false,english:p.pokemonName,goFile:file,
-            legacyFormKeys:[dex+':'+f.proto],orderRank:9999}));
+            shinyAvailable:!apex,legacyFormKeys:[dex+':'+f.proto],orderRank:9999}));
       }
     }
     return all;
+  }
+  function genderEntries(spec,existing,jpNames){
+    if(!Array.isArray(spec?.dex))return [];
+    const byDex=new Map(existing.filter(x=>x.category==='normal').map(x=>[x.dex,x]));
+    const templates=[...spec.dex.map(dex=>({dex,form:'BASE',label:'性別による姿の違い'})),...(spec.additional||[])];
+    const rows=[],used=new Set();
+    for(const g of templates){
+      const dex=Number(g.dex),form=String(g.form||'BASE').toUpperCase();
+      if(!Number.isInteger(dex)||dex<1||dex>2000)continue;
+      const id='gender:'+dex+':'+form.toLowerCase();
+      if(used.has(id))continue;used.add(id);
+      const parent=byDex.get(dex),sfx=form==='BASE'?'':'f'+form;
+      const male=goFile(dex,sfx)||(form==='BASE'?goFile(dex,'fMALE'):null);
+      const female=goFile(dex,form==='BASE'?'g2':sfx+'.g2')||(form==='BASE'?goFile(dex,'fFEMALE'):null);
+      const name=parent?.name||jpNames?.['poke_'+dex]||FALLBACK_SPECIES[dex]||'No.'+dex;
+      rows.push(makeEntry('gender',dex,name,form==='BASE'?'性別による姿の違い':String(g.label||form),id,{
+        released:parent?.released??true,english:parent?.english||'',maleFile:male,femaleFile:female,genderForm:form,
+        verifiedRelease:parent?.verifiedRelease??false
+      }));
+    }
+    return rows;
+  }
+  function migrateGenderChecks(rows){
+    let changed=false;
+    for(const row of rows.filter(x=>isGender(x.category)&&x.genderForm==='BASE')){
+      const parent=rows.find(x=>x.category==='normal'&&x.dex===row.dex);
+      const slug=String(parent?.english||'').toUpperCase().replace(/[^A-Z0-9]+/g,'_');
+      if(!slug)continue;
+      for(const sex of ['MALE','FEMALE']){
+        const old='form:'+row.dex+':'+slug+'_'+sex;
+        if(state.owned[old]){state.owned[row.id+':'+sex.toLowerCase()]=true;delete state.owned[old];changed=true;}
+      }
+    }
+    if(changed)persist();
   }
   function sortEntries(a,b){
     if(a.dex!==b.dex)return a.dex-b.dex;
@@ -360,7 +409,7 @@
   }
   async function loadData(force=false){
     sourceStatus='loading'; els.status.className='notice';els.status.innerHTML='<span class="pulse"></span>最新データを読み込んでいます…';
-    const tasks={assetIndex:fetchJSON([GO_ASSET_MANIFEST]),pokemon:fetchJSON(urlW('pokemon.json')), forms:fetchJSON(urlW('forms.json')), jpPokemon:fetchJSON(urlW('translations/ja/pokemon.json')),jpForms:fetchJSON(urlW('translations/ja/forms.json')), costumes:fetchJSON(urlH('catalog.json')),labels:fetchJSON(urlH('labels.json')),released:fetchJSON([POGO+'released_pokemon.json']),shiny:fetchJSON([POGO+'shiny_pokemon.json']),pokenames:fetchJSON([POGO+'pokemon_names.json']),pokeCSV:fetchText(['https://cdn.jsdelivr.net/gh/PokeAPI/pokeapi@master/data/v2/csv/pokemon.csv','https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon.csv'])};
+    const tasks={assetIndex:fetchJSON([GO_ASSET_MANIFEST]),gender:fetchJSON([GENDER_DATA]),pokemon:fetchJSON(urlW('pokemon.json')), forms:fetchJSON(urlW('forms.json')), jpPokemon:fetchJSON(urlW('translations/ja/pokemon.json')),jpForms:fetchJSON(urlW('translations/ja/forms.json')), costumes:fetchJSON(urlH('catalog.json')),labels:fetchJSON(urlH('labels.json')),released:fetchJSON([POGO+'released_pokemon.json']),shiny:fetchJSON([POGO+'shiny_pokemon.json']),pokenames:fetchJSON([POGO+'pokemon_names.json']),pokeCSV:fetchText(['https://cdn.jsdelivr.net/gh/PokeAPI/pokeapi@master/data/v2/csv/pokemon.csv','https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon.csv'])};
     const names=Object.keys(tasks), values=await Promise.allSettled(Object.values(tasks));
     const failed=[];for(let i=0;i<names.length;i++){sources[names[i]]=values[i].status==='fulfilled'?values[i].value:null;if(!sources[names[i]])failed.push(names[i]);}
     GO_FILES=new Set(Array.isArray(sources.assetIndex?.available)?sources.assetIndex.available:[]);
@@ -369,8 +418,10 @@
     try{rows=getCatalog(sources.pokemon,sources.forms,sources.jpPokemon||{},sources.jpForms||{},sources.costumes||{},sources.labels||{},sources.released,sources.shiny,sources.pokeCSV,sources.pokenames);}catch(e){console.error('Catalog build error',e);}
     if(rows.length<100){rows=fallback();sourceStatus='fallback';}
     else sourceStatus=failed.length?'partial':'ready';
+    rows.push(...genderEntries(sources.gender,rows,sources.jpPokemon||{}));
     addCustomToCatalog(rows);
     const dedup=auditCatalog(rows);
+    migrateGenderChecks(dedup);
     migrateLegacyFormChecks(dedup);
     data=dedup.sort(sortEntries);
     if(sourceStatus==='ready'){els.status.className='notice success';els.status.innerHTML='<span class="pulse"></span>データを読み込みました。入手チェックはこのブラウザに保存されます。';}
@@ -384,8 +435,10 @@
     const entries=rowsFor(cat);
     let total=0,owned=0;
     for(const x of entries){if(!eligibility(x))continue;
-      const costume=isCostume(cat);total+=costume?2:1;
-      if(costume){if(state.owned[x.id+':normal'])owned++;if(state.owned[x.id+':shiny'])owned++;}
+      const costume=isCostume(cat),gender=isGender(cat);
+      total+=costume?(x.shinyAvailable===false?1:2):gender?2:1;
+      if(costume){if(state.owned[x.id+':normal'])owned++;if(x.shinyAvailable!==false&&state.owned[x.id+':shiny'])owned++;}
+      else if(gender){if(state.owned[x.id+':male'])owned++;if(state.owned[x.id+':female'])owned++;}
       else if(state.owned[x.id])owned++;
     }
     return {total,owned,pct:total?Math.round(owned/total*100):0,entries:entries.length};
@@ -397,6 +450,10 @@
     $('overall-ring').style.setProperty('--pct',pct);$('overall-pct').textContent=pct+'%';$('overall-numbers').textContent=`${count.owned.toLocaleString()} / ${count.total.toLocaleString()}`;
     els.summary.innerHTML=pg.map(([c,p])=>`<button type="button" class="summary ${active===c.id?'selected':''}" data-cat="${c.id}"><small>${esc(c.subtitle)}</small><h3>${esc(c.title)}</h3><div class="stat"><strong>${p.pct}%</strong><span>${p.owned}/${p.total}</span></div><div class="mini-track"><span style="width:${p.pct}%"></span></div></button>`).join('');
     els.tabs.innerHTML=pg.map(([c,p])=>`<button type="button" role="tab" aria-selected="${active===c.id}" class="${active===c.id?'active':''}" data-cat="${c.id}">${esc(c.short)}<span class="tab-count">${p.entries.toLocaleString()}</span></button>`).join('');
+  }
+  function genderSprite(file,label){
+    if(!file||!GO_FILES.has(file)||!GO_BASE)return '<span class="art-missing">画像未登録</span>';
+    return '<img loading="lazy" decoding="async" src="'+esc(GO_BASE+file)+'" alt="'+esc(label)+'">';
   }
   function spriteTag(x,shiny){
     const src=spriteUrl(x,shiny);
@@ -410,20 +467,25 @@
     return html;
   }
   function makeCard(x){
-    const costume=isCostume(x.category),excluded=Boolean(state.excluded[x.id]),yes=isOwned(x);
+    const costume=isCostume(x.category),gender=isGender(x.category),excluded=Boolean(state.excluded[x.id]),yes=isOwned(x);
     const ownClass=excluded?'excluded':yes?'owned':'';
     const badge=excluded?'<span class="card-badge excluded-badge">対象外</span>':x.released===false?'<span class="card-badge">未実装</span>':'';
     const unique=esc(x.id),n=String(x.dex).padStart(4,'0');
     const main=`<div class="card-header"><span class="card-no">No.${n}</span><button type="button" class="mini-menu" data-action="exclude" data-id="${unique}" aria-label="${esc(x.name)}を${excluded?'集計に含める':'集計対象外にする'}" title="集計対象から${excluded?'戻す':'除外'}">⋯</button></div>${badge}`;
     const shiny=x.category==='shiny'||x.category==='shinyforms';
     const pictures=costume
-      ?`<div class="costume-images"><div class="sprite"><small>通常色</small>${spriteTag(x,false)}</div><div class="sprite"><small>色違い</small>${spriteTag(x,true)}</div></div>`
+      ?`<div class="costume-images"><div class="sprite"><small>通常色</small>${spriteTag(x,false)}</div><div class="sprite"><small>色違い</small>${x.shinyAvailable===false?'<span class="art-missing">対象外</span>':spriteTag(x,true)}</div></div>`
+      :gender?`<div class="costume-images"><div class="sprite"><small>♂ オス</small>${genderSprite(x.maleFile,x.name+' オス')}</div><div class="sprite"><small>♀ メス</small>${genderSprite(x.femaleFile,x.name+' メス')}</div></div>`
       :`<div class="sprite">${spriteTag(x,shiny)}</div>`;
     const sub=x.formKind==='regional'?'リージョン：'+x.sub:x.sub;
     const inner=`${pictures}<span class="card-name">${esc(x.name)}</span><span class="card-sub">${esc(sub||' ')}</span>`;
     if(costume){
       const a=Boolean(state.owned[x.id+':normal']),b=Boolean(state.owned[x.id+':shiny']);
-      return `<article class="pokemon-card ${ownClass}" data-id="${unique}">${main}<div class="card-main" title="衣装：${esc(x.sub)}">${inner}</div><div class="costume-foot"><button type="button" class="mini-check ${a?'checked':''}" data-id="${unique}" data-action="normal" aria-pressed="${a}">${a?'✓ ':''}通常</button><button type="button" class="mini-check shiny ${b?'checked':''}" data-id="${unique}" data-action="shiny" aria-pressed="${b}">${b?'✓ ':''}★色違い</button></div></article>`;
+      return `<article class="pokemon-card ${ownClass}" data-id="${unique}">${main}<div class="card-main" title="衣装：${esc(x.sub)}">${inner}</div><div class="costume-foot"><button type="button" class="mini-check ${a?'checked':''}" data-id="${unique}" data-action="normal" aria-pressed="${a}">${a?'✓ ':''}通常</button><button type="button" class="mini-check shiny ${b?'checked':''}" data-id="${unique}" data-action="shiny" aria-pressed="${b}" ${x.shinyAvailable===false?'disabled title="色違い未確認"':''}>${b?'✓ ':''}★色違い</button></div></article>`;
+    }
+    if(gender){
+      const male=Boolean(state.owned[x.id+':male']),female=Boolean(state.owned[x.id+':female']);
+      return `<article class="pokemon-card ${ownClass}" data-id="${unique}">${main}<div class="card-main">${inner}</div><div class="costume-foot"><button type="button" class="mini-check ${male?'checked':''}" data-id="${unique}" data-action="male" aria-pressed="${male}">${male?'✓ ':''}♂ オス</button><button type="button" class="mini-check gender-female ${female?'checked':''}" data-id="${unique}" data-action="female" aria-pressed="${female}">${female?'✓ ':''}♀ メス</button></div></article>`;
     }
     return `<article class="pokemon-card ${ownClass}" data-id="${unique}">${main}<button type="button" class="card-main" data-action="check" data-id="${unique}" aria-pressed="${yes}" aria-label="${esc(x.name)} ${esc(x.sub)} ${yes?'入手済み':'未入手'}">${inner}</button><div class="card-foot"><span class="captured-dot">${yes?'✓':'○'}</span>${yes?'入手済み':'未入手'}</div></article>`;
   }
@@ -453,7 +515,11 @@
   function changeCat(cat){if(!CATS.some(c=>c.id===cat))return;active=cat;visibleLimit=PAGE_SIZE;els.formType.hidden=!(cat==='forms'||cat==='shinyforms');$('order-open').hidden=cat!=='costumepika';render();}
   function toggleOwnership(id,kind){
     const x=data.find(r=>r.id===id);if(!x)return;
-    const k=isCostume(x.category)?id+':'+kind:id;
+    if(isDual(x.category)){
+      const allowed=isGender(x.category)?['male','female']:['normal','shiny'];
+      if(!allowed.includes(kind)||(kind==='shiny'&&x.shinyAvailable===false))return;
+    }
+    const k=isDual(x.category)?id+':'+kind:id;
     if(state.owned[k])delete state.owned[k];else state.owned[k]=true;
     persist();render();
   }
@@ -495,7 +561,7 @@
   function bindEvents(){
     els.summary.addEventListener('click',e=>{const cat=e.target.closest('[data-cat]')?.dataset.cat;if(cat)changeCat(cat)});
     els.tabs.addEventListener('click',e=>{const cat=e.target.closest('[data-cat]')?.dataset.cat;if(cat)changeCat(cat)});
-    els.cards.addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(!b)return;const {action,id}=b.dataset;if(action==='exclude')toggleExclude(id);else if(action==='check')toggleOwnership(id);else if(action==='normal'||action==='shiny')toggleOwnership(id,action);});
+    els.cards.addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(!b)return;const {action,id}=b.dataset;if(action==='exclude')toggleExclude(id);else if(action==='check')toggleOwnership(id);else if(['normal','shiny','male','female'].includes(action))toggleOwnership(id,action);});
     // Sprite fallback. Never insert unchecked URLs from an imported file.
     els.cards.addEventListener('error',e=>{const img=e.target;if(img.tagName!=='IMG')return;const count=Number(img.dataset.try||'0');img.dataset.try=count+1;const next=[img.dataset.fallback,img.dataset.fallback2,img.dataset.fallback3][count];if(count<3&&next&&next!==img.src){img.src=next;}else{img.style.display='none';img.parentElement.classList.add('no-art');}},true);
     const reset=()=>{visibleLimit=PAGE_SIZE;renderCards();};
