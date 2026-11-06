@@ -21,6 +21,11 @@
 .summary-grid{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}
 .costume-foot .mini-check.gender-female.checked{background:#f4e7fa;border-color:#d49de0;color:#854492}
 .costume-foot .mini-check:disabled{opacity:.42;cursor:not-allowed}
+
+.side-scroll{position:fixed;right:max(10px,env(safe-area-inset-right));bottom:calc(90px + env(safe-area-inset-bottom));z-index:50;display:flex;flex-direction:column;gap:9px}
+.side-scroll button{width:44px;height:44px;border-radius:50%;border:1px solid #b7cbe7;background:#fff;box-shadow:0 3px 12px #122c5226;color:#1b55a4;font-weight:900;font-size:23px;line-height:1}
+.side-scroll button:active{background:#e8f3ff}
+@media(max-width:600px){.side-scroll{right:8px;bottom:calc(84px + env(safe-area-inset-bottom))}.side-scroll button{width:38px;height:38px}.workspace-actions{flex-direction:row;align-items:center;justify-content:flex-start}.workspace-actions button{flex:1 1 auto}}
 </style>
 </head>
 <body>
@@ -36,7 +41,7 @@
     <div class="notice" id="data-status" role="status"><span class="pulse"></span> ポケモンのデータを読み込んでいます…</div>
     <section class="summary-grid" id="summary-grid" aria-label="カテゴリ別の達成状況"></section>
     <main class="workspace">
-      <div class="workspace-top"><div><div class="eyebrow dark">YOUR COLLECTION</div><h2>コンプチェッカー</h2></div><div class="workspace-actions"><button type="button" class="button secondary" id="order-open" hidden>ピカチュウ並び順</button><button type="button" class="button secondary" id="add-open">＋ 項目を追加</button></div></div>
+      <div class="workspace-top"><div><div class="eyebrow dark">YOUR COLLECTION</div><h2>コンプチェッカー</h2></div><div class="workspace-actions"><button type="button" class="button secondary" id="order-open" hidden>ピカチュウ並び順</button><button type="button" class="button secondary" id="bulk-select" title="現在の絞り込みに一致する全項目を入手済みにする">✓ 全て選択</button><button type="button" class="button secondary" id="bulk-clear" title="現在の絞り込みに一致する全項目のチェックを解除">全て解除</button><button type="button" class="button secondary" id="add-open">＋ 項目を追加</button></div></div>
       <nav class="tabs" id="category-tabs" aria-label="カテゴリ切り替え"></nav>
       <section class="controls" aria-label="表示条件">
         <div class="search-wrap"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="ポケモン名・図鑑番号・フォルム名で検索" autocomplete="off" aria-label="検索" /></div>
@@ -49,8 +54,9 @@
       <div class="cards" id="cards" aria-live="polite"></div>
       <div id="empty" class="empty" hidden><div>◌</div><strong>該当するポケモンがありません</strong><span>検索条件・フィルタを変更してください。</span></div>
       <button type="button" class="button load-more" id="load-more" hidden>さらに表示する</button>
-      <p class="helper" id="catalog-help">※ フォルム・衣装はゲームデータやコミュニティ情報を基にした候補を含みます。実装状況や色違いの解禁状況は、個々に検証済みとは限りません。</p>
+      <p class="helper" id="catalog-help">※ 「全て選択／全て解除」は現在のタブで検索・絞り込みに一致する全項目（続きを含む）に適用します。オス・メスはそれぞれ独立、衣装は通常色・色違いを独立管理します。フォルム・衣装にはゲームデータなどを基にした候補を含みます。実装状況や色違いの解禁状況は、個々に検証済みとは限りません。</p>
     </main>
+    <aside class="side-scroll" aria-label="ページ内スクロール"><button type="button" id="scroll-top" aria-label="ページの先頭へ" title="先頭へ">↑</button><button type="button" id="scroll-bottom" aria-label="ページの末尾へ" title="末尾へ">↓</button></aside>
     <footer><span>個人用・非公式ファンツール / データはこのブラウザ内に保存</span><span>Pokémonおよび関連名称・画像の権利は各権利者に帰属します。</span></footer>
   </div>
   <dialog id="order-dialog" class="dialog"><div class="modal"><div class="dialog-heading"><h2>ピカチュウの並び順</h2><button type="button" class="close" id="order-close">×</button></div><p class="muted">Googleスプレッドシートの衣装名を上から順に1行1件で貼り付けます。名称が一致する項目だけ先頭から指定順に並べ、残りはその後ろに表示します。ここでの変更はこの端末に保存されます。</p><textarea id="pika-order-input" rows="11" style="width:100%;border:1px solid #dce5f1;border-radius:10px;padding:10px;font:inherit;font-size:13px" placeholder="例：パーティハット&#10;サンタ帽子&#10;ハロウィン帽子"></textarea><p id="order-feedback" class="feedback" aria-live="polite"></p><div class="setting-actions"><button type="button" id="order-apply" class="button primary">一致した順序を反映</button><button type="button" id="order-clear" class="button secondary">指定を解除</button></div></div></dialog>
@@ -523,6 +529,22 @@
     if(state.owned[k])delete state.owned[k];else state.owned[k]=true;
     persist();render();
   }
+  function bulkUpdate(select){
+    const cat=CATS.find(c=>c.id===active),rows=filteredRows().filter(x=>!state.excluded[x.id]);
+    if(!rows.length){message('選択対象のポケモンがありません');return;}
+    const verb=select?'すべて入手済みに登録':'すべて未入手に戻す';
+    if(!window.confirm(cat.title+'：検索・絞り込みに一致する'+rows.length+'件を'+verb+'しますか？\n続きページも含みます。他のタブは変更しません。'))return;
+    for(const x of rows){
+      const keys=isGender(x.category)?['male','female']:
+        isCostume(x.category)?(x.shinyAvailable===false?['normal']:['normal','shiny']):[null];
+      for(const flag of keys){
+        const k=flag?x.id+':'+flag:x.id;
+        if(select)state.owned[k]=true;else delete state.owned[k];
+      }
+    }
+    persist();render();
+    message(rows.length+'件を'+(select?'入手済みに登録しました':'未入手に戻しました'));
+  }
   function toggleExclude(id){const x=data.find(r=>r.id===id);if(!x)return;if(state.excluded[id])delete state.excluded[id];else state.excluded[id]=true;persist();render();message(state.excluded[id]?'達成率の集計対象から外しました':'達成率の集計対象に戻しました');}
   function message(text){els.toast.textContent=text;els.toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>els.toast.classList.remove('show'),2700);}
   function download(content,filename,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
@@ -531,8 +553,8 @@
   }
   function csvValue(v){return '"'+String(v??'').replace(/"/g,'""')+'"';}
   function exportCSV(){
-    const header=['カテゴリ','図鑑番号','ポケモン名','フォルム・衣装','通常・本体入手済み','衣装色違い入手済み','集計対象外','候補・未実装'];
-    const rows=data.map(x=>[CATS.find(c=>c.id===x.category)?.title||x.category,x.dex,x.name,x.sub,isCostume(x.category)?!!state.owned[x.id+':normal']:!!state.owned[x.id],isCostume(x.category)?!!state.owned[x.id+':shiny']:'',!!state.excluded[x.id],x.released===false?'未実装':x.uncertain?'候補':'']);
+    const header=['カテゴリ','図鑑番号','ポケモン名','フォルム・衣装','通常入手済み','衣装通常色','衣装色違い','オス','メス','集計対象外','候補・未実装'];
+    const rows=data.map(x=>[CATS.find(c=>c.id===x.category)?.title||x.category,x.dex,x.name,x.sub,isDual(x.category)?'':!!state.owned[x.id],isCostume(x.category)?!!state.owned[x.id+':normal']:'',isCostume(x.category)?!!state.owned[x.id+':shiny']:'',isGender(x.category)?!!state.owned[x.id+':male']:'',isGender(x.category)?!!state.owned[x.id+':female']:'',!!state.excluded[x.id],x.released===false?'未実装':x.uncertain?'候補':'']);
     download('\ufeff'+[header,...rows].map(r=>r.map(csvValue).join(',')).join('\r\n'),'pokemon-go-checker-'+new Date().toISOString().slice(0,10)+'.csv','text/csv;charset=utf-8');message('CSVを書き出しました');
   }
   function importJSON(file){
@@ -584,6 +606,10 @@
     });
     $('order-clear').addEventListener('click',()=>{state.pikachuOrder=[];data.sort(sortEntries);persist();render();$('order-feedback').textContent='指定した並び順を解除しました。';});
     $('settings-open').addEventListener('click',()=>$('settings-dialog').showModal());
+    $('bulk-select').addEventListener('click',()=>bulkUpdate(true));
+    $('bulk-clear').addEventListener('click',()=>bulkUpdate(false));
+    $('scroll-top').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+    $('scroll-bottom').addEventListener('click',()=>window.scrollTo({top:document.documentElement.scrollHeight,behavior:'smooth'}));
     $('add-open').addEventListener('click',()=>$('add-dialog').showModal());
     $('add-close').addEventListener('click',()=>$('add-dialog').close());
     $('add-form').addEventListener('submit',addCustom);
