@@ -177,7 +177,7 @@
   function spriteUrl(entry,shiny=false){
     const wanted=entry.goFile
       ?entry.goFile.replace(/(?:\.s)?\.icon\.png$/,shiny?'.s.icon.png':'.icon.png')
-      :goFile(entry.dex,'',shiny);
+      :(entry.category==='normal'||entry.category==='shiny'?goFile(entry.dex,'',shiny):null);
     if(wanted&&GO_FILES.has(wanted)&&GO_BASE)return GO_BASE+wanted;
     if(entry.artFile){
       const src=String(entry.artBase||'')+entry.artFile.replace('.s.icon.png',shiny?'.s.icon.png':'.icon.png');
@@ -273,13 +273,15 @@
     return all;
   }
   function sortEntries(a,b){
-    if(a.category==='costumepika'&&b.category==='costumepika'){
+    if(a.dex!==b.dex)return a.dex-b.dex;
+    if(a.category!==b.category)return CATS.findIndex(c=>c.id===a.category)-CATS.findIndex(c=>c.id===b.category);
+    if(a.category==='costumepika'){
       const position=x=>state.pikachuOrder?.indexOf(x.id)??-1;
       const pa=position(a),pb=position(b);
       if(pa!==pb){if(pa===-1)return 1;if(pb===-1)return -1;return pa-pb;}
       return (a.orderRank??9999)-(b.orderRank??9999)||a.sub.localeCompare(b.sub,'ja');
     }
-    return a.dex-b.dex||a.sub.localeCompare(b.sub,'ja');
+    return a.sub.localeCompare(b.sub,'ja');
   }
   function addCustomToCatalog(list){
     const ids=new Set(list.map(x=>x.id));
