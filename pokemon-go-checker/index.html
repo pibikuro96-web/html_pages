@@ -26,6 +26,7 @@
 .side-scroll button{width:44px;height:44px;border-radius:50%;border:1px solid #b7cbe7;background:#fff;box-shadow:0 3px 12px #122c5226;color:#1b55a4;font-weight:900;font-size:23px;line-height:1}
 .side-scroll button:active{background:#e8f3ff}
 @media(max-width:600px){.side-scroll{right:8px;bottom:calc(84px + env(safe-area-inset-bottom))}.side-scroll button{width:38px;height:38px}.workspace-actions{flex-direction:row;align-items:center;justify-content:flex-start}.workspace-actions button{flex:1 1 auto}}
+.reference-caption{display:block;font-size:8px;line-height:1.15;color:#7b8ca3;text-align:center;max-width:100%}
 </style>
 </head>
 <body>
@@ -67,7 +68,7 @@
 /* Pokémon GO personal collection tracker. No accounts or analytics. */
 (() => {
   'use strict';
-  const VERSION = '1.3.0';
+  const VERSION = '1.3.1';
   const STORE_KEY = 'pogo-personal-collection-v1';
   const CACHE_KEY = 'pogo-catalog-cache-v1';
   const PAGE_SIZE = 120;
@@ -457,9 +458,17 @@
     els.summary.innerHTML=pg.map(([c,p])=>`<button type="button" class="summary ${active===c.id?'selected':''}" data-cat="${c.id}"><small>${esc(c.subtitle)}</small><h3>${esc(c.title)}</h3><div class="stat"><strong>${p.pct}%</strong><span>${p.owned}/${p.total}</span></div><div class="mini-track"><span style="width:${p.pct}%"></span></div></button>`).join('');
     els.tabs.innerHTML=pg.map(([c,p])=>`<button type="button" role="tab" aria-selected="${active===c.id}" class="${active===c.id?'active':''}" data-cat="${c.id}">${esc(c.short)}<span class="tab-count">${p.entries.toLocaleString()}</span></button>`).join('');
   }
-  function genderSprite(file,label){
-    if(!file||!GO_FILES.has(file)||!GO_BASE)return '<span class="art-missing">画像未登録</span>';
-    return '<img loading="lazy" decoding="async" src="'+esc(GO_BASE+file)+'" alt="'+esc(label)+'">';
+  function genderSprite(file,label,dex,sex){
+    if(file&&GO_FILES.has(file)&&GO_BASE){
+      return '<img loading="lazy" decoding="async" src="'+esc(GO_BASE+file)+'" alt="'+esc(label)+'">';
+    }
+    // Pokémon GO has no published sprite for #902 at present.
+    // Explicitly labelled Pokémon HOME reference art, not a GO screenshot.
+    if(dex===902){
+      const ref='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/'+(sex==='female'?'female/':'')+'902.png';
+      return '<img loading="lazy" decoding="async" src="'+ref+'" alt="'+esc(label+'（Pokémon HOME参考画像）')+'" title="Pokémon HOMEの参考画像／Pokémon GO未実装" onerror="this.style.display=\'none\';this.nextElementSibling.hidden=false"><span class="art-missing" hidden>画像を表示できません</span><span class="reference-caption">HOME参考画像・GO未実装</span>';
+    }
+    return '<span class="art-missing">画像未登録</span>';
   }
   function spriteTag(x,shiny){
     const src=spriteUrl(x,shiny);
@@ -481,7 +490,7 @@
     const shiny=x.category==='shiny'||x.category==='shinyforms';
     const pictures=costume
       ?`<div class="costume-images"><div class="sprite"><small>通常色</small>${spriteTag(x,false)}</div><div class="sprite"><small>色違い</small>${x.shinyAvailable===false?'<span class="art-missing">対象外</span>':spriteTag(x,true)}</div></div>`
-      :gender?`<div class="costume-images"><div class="sprite"><small>♂ オス</small>${genderSprite(x.maleFile,x.name+' オス')}</div><div class="sprite"><small>♀ メス</small>${genderSprite(x.femaleFile,x.name+' メス')}</div></div>`
+      :gender?`<div class="costume-images"><div class="sprite"><small>♂ オス</small>${genderSprite(x.maleFile,x.name+' オス',x.dex,'male')}</div><div class="sprite"><small>♀ メス</small>${genderSprite(x.femaleFile,x.name+' メス',x.dex,'female')}</div></div>`
       :`<div class="sprite">${spriteTag(x,shiny)}</div>`;
     const sub=x.formKind==='regional'?'リージョン：'+x.sub:x.sub;
     const inner=`${pictures}<span class="card-name">${esc(x.name)}</span><span class="card-sub">${esc(sub||' ')}</span>`;
