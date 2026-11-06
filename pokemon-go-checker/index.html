@@ -57,7 +57,7 @@
 /* Pokémon GO personal collection tracker. No accounts or analytics. */
 (() => {
   'use strict';
-  const VERSION = '1.2.0';
+  const VERSION = '1.2.1';
   const STORE_KEY = 'pogo-personal-collection-v1';
   const CACHE_KEY = 'pogo-catalog-cache-v1';
   const PAGE_SIZE = 120;
@@ -255,7 +255,14 @@
         const name=jpPokemon['poke_'+dex]||FALLBACK_SPECIES[dex]||eng||`No.${dex}`;
         const custom=perSpecies[eng]?.[code];
         const shared=(labels.shared||[]).find(x=>x.code===code)?.label;
-        const title=costumeName(custom||shared||c.suggested||c.pretty||code.slice(2).replace(/_/g,' '));
+        const baseTitle=costumeName(custom||shared||c.suggested||c.pretty||code.slice(2).replace(/_/g,' '));
+        const distinctPikachuNames={
+          'c:HALLOWEEN_2017':'ハロウィン帽子（2017）',
+          'c:HALLOWEEN_2021_NOEVOLVE':'ハロウィン帽子（2021）',
+          'c:ANNIVERSARY':'パーティハット（2017）',
+          'c:JAN_2020_NOEVOLVE':'パーティハット（2020）'
+        };
+        const title=Number(dex)===25?(distinctPikachuNames[code]||baseTitle):baseTitle;
         const file=`pm${dex}.${code.slice(0,1)}${code.slice(2)}.s.icon.png`;
         const category=Number(dex)===25?'costumepika':'costumeother';
         const ownSpeciesRelease=hasReleased?Boolean(releasedData[dex]):true;
