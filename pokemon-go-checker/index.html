@@ -27,6 +27,11 @@
 .side-scroll button:active{background:#e8f3ff}
 @media(max-width:600px){.side-scroll{right:8px;bottom:calc(84px + env(safe-area-inset-bottom))}.side-scroll button{width:38px;height:38px}.workspace-actions{flex-direction:row;align-items:center;justify-content:flex-start}.workspace-actions button{flex:1 1 auto}}
 .reference-caption{display:block;font-size:8px;line-height:1.15;color:#7b8ca3;text-align:center;max-width:100%}
+
+.sprite-note{display:block;text-align:center;color:#63778d;font-size:8px;line-height:1.25;max-width:100%;padding:0 2px}
+.costume-images .sprite{height:auto;min-height:90px;justify-content:flex-start}
+.costume-images .sprite img{max-height:61px}
+@media(max-width:600px){.sprite-note{font-size:7px}}
 </style>
 </head>
 <body>
@@ -68,7 +73,7 @@
 /* Pokémon GO personal collection tracker. No accounts or analytics. */
 (() => {
   'use strict';
-  const VERSION = '1.3.1';
+  const VERSION = '1.4.0';
   const STORE_KEY = 'pogo-personal-collection-v1';
   const CACHE_KEY = 'pogo-catalog-cache-v1';
   const PAGE_SIZE = 120;
@@ -106,7 +111,10 @@
   let state=readStorage();
   let active='normal', visibleLimit=PAGE_SIZE, data=[], sourceStatus='loading', toastTimer=0;
   const sources={};
-  let GO_FILES=new Set(),GO_BASE='';
+  let GO_FILES=new Set(),GO_BASE='',GO_RAW_BASE='';
+  let HOME_FILES=new Set(),HOME_SHINY=new Set(),HOME_FEMALE=new Set();
+  let HOME_BASE='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/';
+
 
   function readStorage(){
     try{const d=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');return {owned:(d.owned&&typeof d.owned==='object')?d.owned:{}, excluded:(d.excluded&&typeof d.excluded==='object')?d.excluded:{}, custom:Array.isArray(d.custom)?d.custom:[], updated:d.updated||null, pikachuOrder:Array.isArray(d.pikachuOrder)?d.pikachuOrder.filter(x=>typeof x==='string').slice(0,500):[]};}
@@ -197,17 +205,92 @@
     const names={'Party Hat':'パーティハット','Witch Hat':'ハロウィン帽子','Santa Hat':'サンタ帽子','Holiday Outfit':'冬の衣装','Summer Hat':'サマースタイル','Straw Hat':'麦わら帽子','Detective Hat':'探偵帽子','Detective Hat 2023':'名探偵帽子（2023）','Flower Hat':'花飾り','Cake Hat':'ケーキ帽子','Safari Hat':'サファリ帽子','Top Hat':'シルクハット','Red Party Hat':'赤いパーティハット','Rayquaza Hat':'レックウザ帽子','Charizard Hat':'リザードン帽子','Lucario Hat':'ルカリオ帽子','Umbreon Hat':'ブラッキー帽子','Meloetta Hat':'メロエッタ帽子','Cherry Blossom':'桜飾り','Original Cap':'サトシ帽子','World Cap':'ワールドキャップ','New Year\'s Hat':'新年帽子','Rock Star':'ハードロック','Pop Star':'アイドル','Libre':'マスクド','Ph.D.':'ドクター','Clone Pikachu':'コピーピカチュウ','Copy 2019':'コピー','Spring 2020':'パーティハット（2020）','Goggles 2026':'ゴーグル（2026）','Swim 2025':'水泳衣装（2025）','Mimikyu Costume':'ミミッキュ仮装','Flying Pikachu':'そらをとぶ','Kariyushi Shirt':'かりゆしウェア','Cowboy Hat':'カウボーイ帽子','Halloween Hat':'ハロウィン帽子','Flower Crown':'花冠','Sunglasses':'サングラス','Holiday Wreath':'ホリデーリース','Sun Crown':'太陽の冠','Moon Crown':'月の冠','Marathon Visor':'マラソンバイザー','Willow\'s Lab Coat':'ウィロー博士の助手','Fossil Costume':'化石衣装','Party Hat':'パーティハット'};
     return names[human]||human;
   }
-  function spriteUrl(entry,shiny=false){
-    const wanted=entry.goFile
-      ?entry.goFile.replace(/(?:\.s)?\.icon\.png$/,shiny?'.s.icon.png':'.icon.png')
-      :(entry.category==='normal'||entry.category==='shiny'?goFile(entry.dex,'',shiny):null);
-    if(wanted&&GO_FILES.has(wanted)&&GO_BASE)return GO_BASE+wanted;
-    if(entry.artFile){
-      const src=String(entry.artBase||'')+entry.artFile.replace('.s.icon.png',shiny?'.s.icon.png':'.icon.png');
-      if(src.startsWith('https://cdn.jsdelivr.net/'))return src;
+  const FORM_HOME_IDS={
+    MAGEARNA_ORIGINAL_COLOR:10147,
+    CALYREX_ICE_RIDER:10193,CALYREX_SHADOW_RIDER:10194,
+    OGEPROM_TEAL:1017,OGERPON_TEAL:1017,
+    OGEPROM_WELLSPRING:10273,OGERPON_WELLSPRING:10273,
+    OGEPROM_HEARTHFLAME:10274,OGERPON_HEARTHFLAME:10274,
+    OGEPROM_CORNERSTONE:10275,OGERPON_CORNERSTONE:10275,
+    NECROZMA_ULTRA:10157, EISCUE_ICE:875, EISCUE_NOICE:10185,
+    PALAFIN_ZERO:964,PALAFIN_HERO:10256,
+    TERAPAGOS_TERASTAL:10276,TERAPAGOS_STELLAR:10277,
+    BASCULEGION_FEMALE:10248,
+    KORAIDON_APEX:1007,MIRAIDON_ULTIMATE:1008,
+    XERNEAS_ACTIVE:716
+  };
+  function homeImageId(entry){
+    return Number(FORM_HOME_IDS[entry.formProto]||entry.spriteID||entry.dex);
+  }
+  function imageCandidates(entry,shiny=false){
+    const out=[],seen=new Set(),cat=entry.category,dex=Number(entry.dex);
+    const add=(u,note)=>{
+      if(!u||seen.has(u))return;
+      seen.add(u);out.push({url:u,note:note||''});
+    };
+    const go=(file,note)=>{
+      if(!file||!GO_FILES.has(file))return;
+      if(GO_BASE)add(GO_BASE+file,note);
+      if(GO_RAW_BASE)add(GO_RAW_BASE+file,note);
+    };
+    const home=(num,note,genderDir)=>{
+      const n=Number(num),files=genderDir==='female'?HOME_FEMALE:shiny?HOME_SHINY:HOME_FILES;
+      if(!Number.isInteger(n)||n<1||n>20000)return;
+      if(files.size&&!files.has(n))return;
+      add(HOME_BASE+(genderDir==='female'?'female/':shiny?'shiny/':'')+n+'.png',note);
+    };
+    const standard=(cat==='normal'||cat==='shiny');
+    const costume=isCostume(cat);
+    const wanted=entry.goFile?entry.goFile.replace(/(?:\.s)?\.icon\.png$/,shiny?'.s.icon.png':'.icon.png')
+      :standard?goFile(dex,'',shiny):null;
+    go(wanted,'');
+    if(standard&&!wanted){
+      // Most GO variants without a base icon have a playable default forme.
+      const prefix='pm'+dex+'.f',ending=shiny?'.s.icon.png':'.icon.png';
+      const representative=[...GO_FILES].filter(x=>x.startsWith(prefix)&&x.endsWith(ending))
+        .sort((a,b)=>a.localeCompare(b))[0];
+      go(representative,'GOの代表画像（姿が異なる場合があります）');
     }
-    if(entry.category==='normal'||entry.category==='shiny')return SPRITE+'other/home/'+(shiny?'shiny/':'')+(entry.spriteID||entry.dex)+'.png';
-    return null;
+    if(costume&&entry.artFile){
+      const uri=String(entry.artBase||'')+entry.artFile.replace('.s.icon.png',shiny?'.s.icon.png':'.icon.png');
+      if(/^https:\/\/cdn\.jsdelivr\.net\/gh\/PokeMiners\//.test(uri))add(uri,'');
+    }
+    if(cat==='gender')return out;
+    if(!standard&&!costume){
+      // Scatterbug and Spewpa have the same visible appearance across habitat patterns.
+      if((dex===664||dex===665)&&/^S(?:CATTERBUG|PEWPA)_/.test(entry.formProto||'')){
+        go(goFile(dex,'',shiny),'進化前の姿は共通です');
+      }
+      // The currently mined GO sprites stop at Spinda form 08.
+      if(dex===327&&!wanted){
+        go(goFile(dex,'f08',shiny),'参考：別の模様です');
+      }
+      if(dex===716&&entry.formProto==='XERNEAS_ACTIVE'){
+        go(goFile(dex,'',shiny),'GO参考画像');
+      }
+      const id=homeImageId(entry);
+      const sameForm=id!==dex || ['EISCUE_ICE','PALAFIN_ZERO','OGERPON_TEAL'].includes(entry.formProto);
+      home(id,sameForm?'HOME参考画像（同じ姿）':'HOME参考画像（姿が異なる場合があります）');
+      if(id!==dex)home(dex,'HOME参考画像（通常の姿）');
+    }else if(costume){
+      home(dex,'HOME参考画像（衣装は反映されません）');
+    }else{
+      home(homeImageId(entry),'HOME参考画像');
+    }
+    // Standard PokeAPI sprites make an additional safety net for older devices.
+    if(dex>=1&&dex<=1025){
+      add('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/'+dex+'.png','公式イラスト参考画像');
+      add('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'+dex+'.png','ドット絵参考画像');
+    }
+    return out;
+  }
+  function spriteUrl(entry,shiny=false){return imageCandidates(entry,shiny)[0]?.url||null;}
+  function renderImageOptions(candidates,label){
+    if(!candidates.length)return '<span class="art-missing">画像資料なし</span>';
+    const opts=esc(JSON.stringify(candidates));
+    const first=candidates[0];
+    return '<img loading="lazy" decoding="async" src="'+esc(first.url)+'" alt="'+esc(label)+'" data-image-options="'+opts+'" data-image-index="0">'+
+      '<span class="sprite-note"'+(first.note?'':' hidden')+'>'+esc(first.note)+'</span>';
   }
   function resolveAssetId(form,pokemonMap,dex){
     let slug=String(form.proto||'').toLowerCase().replace(/_/g,'-');
@@ -421,6 +504,14 @@
     const failed=[];for(let i=0;i<names.length;i++){sources[names[i]]=values[i].status==='fulfilled'?values[i].value:null;if(!sources[names[i]])failed.push(names[i]);}
     GO_FILES=new Set(Array.isArray(sources.assetIndex?.available)?sources.assetIndex.available:[]);
     GO_BASE=typeof sources.assetIndex?.base==='string'&&sources.assetIndex.base.startsWith('https://cdn.jsdelivr.net/gh/PokeMiners/')?sources.assetIndex.base:'';
+    const revision=String(sources.assetIndex?.commit||'');
+    GO_RAW_BASE=/^[a-f0-9]{40}$/.test(revision)
+      ?'https://raw.githubusercontent.com/PokeMiners/pogo_assets/'+revision+'/Images/Pokemon%20-%20256x256/Addressable%20Assets/':'';
+    const home=sources.assetIndex?.home||{};
+    if(typeof home.base==='string'&&home.base.startsWith('https://raw.githubusercontent.com/PokeAPI/sprites/'))HOME_BASE=home.base;
+    HOME_FILES=new Set(Array.isArray(home.files)?home.files:[]);
+    HOME_SHINY=new Set(Array.isArray(home.shiny)?home.shiny:[]);
+    HOME_FEMALE=new Set(Array.isArray(home.female)?home.female:[]);
     let rows=[];
     try{rows=getCatalog(sources.pokemon,sources.forms,sources.jpPokemon||{},sources.jpForms||{},sources.costumes||{},sources.labels||{},sources.released,sources.shiny,sources.pokeCSV,sources.pokenames);}catch(e){console.error('Catalog build error',e);}
     if(rows.length<100){rows=fallback();sourceStatus='fallback';}
@@ -459,27 +550,28 @@
     els.tabs.innerHTML=pg.map(([c,p])=>`<button type="button" role="tab" aria-selected="${active===c.id}" class="${active===c.id?'active':''}" data-cat="${c.id}">${esc(c.short)}<span class="tab-count">${p.entries.toLocaleString()}</span></button>`).join('');
   }
   function genderSprite(file,label,dex,sex){
-    if(file&&GO_FILES.has(file)&&GO_BASE){
-      return '<img loading="lazy" decoding="async" src="'+esc(GO_BASE+file)+'" alt="'+esc(label)+'">';
+    const candidates=[],seen=new Set();
+    const add=(url,note)=>{
+      if(!url||seen.has(url))return;
+      seen.add(url);candidates.push({url,note:note||''});
+    };
+    if(file&&GO_FILES.has(file)){
+      if(GO_BASE)add(GO_BASE+file,'');
+      if(GO_RAW_BASE)add(GO_RAW_BASE+file,'');
     }
-    // Pokémon GO has no published sprite for #902 at present.
-    // Explicitly labelled Pokémon HOME reference art, not a GO screenshot.
-    if(dex===902){
-      const ref='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/'+(sex==='female'?'female/':'')+'902.png';
-      return '<img loading="lazy" decoding="async" src="'+ref+'" alt="'+esc(label+'（Pokémon HOME参考画像）')+'" title="Pokémon HOMEの参考画像／Pokémon GO未実装" onerror="this.style.display=\'none\';this.nextElementSibling.hidden=false"><span class="art-missing" hidden>画像を表示できません</span><span class="reference-caption">HOME参考画像・GO未実装</span>';
-    }
-    return '<span class="art-missing">画像未登録</span>';
+    const id=Number(dex),sexDir=sex==='female'?'female/':'';
+    if(sex==='female'&&(!HOME_FEMALE.size||HOME_FEMALE.has(id)))
+      add(HOME_BASE+'female/'+id+'.png','HOME参考画像'+(id===902?'（GO未実装）':''));
+    const standardNum=id===902&&sex==='female'?10248:id;
+    if(sex==='female'&&id===902)add(HOME_BASE+'10248.png','HOME参考画像（メス・GO未実装）');
+    if((!HOME_FILES.size||HOME_FILES.has(standardNum)))
+      add(HOME_BASE+standardNum+'.png','HOME参考画像'+(id===902?'（GO未実装）':''));
+    if(!candidates.length&&id>=1&&id<=1025)
+      add('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/'+id+'.png','公式イラスト参考画像（性差未反映）');
+    return renderImageOptions(candidates,label);
   }
   function spriteTag(x,shiny){
-    const src=spriteUrl(x,shiny);
-    if(!src)return '<span class="art-missing">画像未登録</span>';
-    const fallback=`${SPRITE}${shiny?'shiny/':''}${x.spriteID||x.dex}.png`;
-    const safer=`${SPRITE}other/home/${shiny?'shiny/':''}${x.dex}.png`;
-    const backup=`${SPRITE}${x.dex}.png`;
-    // Only fixed-domain constructed URLs are permitted: uploaded/imported data cannot set an image URL.
-    const verifiedForm=x.category==='forms'||x.category==='shinyforms'||isCostume(x.category);
-    const html=`<img loading="lazy" decoding="async" src="${esc(src)}" alt="${esc(x.name+' '+x.sub+(shiny?' 色違い':''))}" data-fallback="${verifiedForm?'':esc(fallback)}" data-fallback2="${verifiedForm?'':esc(safer)}" data-fallback3="${verifiedForm?'':esc(backup)}">`;
-    return html;
+    return renderImageOptions(imageCandidates(x,shiny),x.name+' '+x.sub+(shiny?' 色違い':''));
   }
   function makeCard(x){
     const costume=isCostume(x.category),gender=isGender(x.category),excluded=Boolean(state.excluded[x.id]),yes=isOwned(x);
@@ -594,7 +686,28 @@
     els.tabs.addEventListener('click',e=>{const cat=e.target.closest('[data-cat]')?.dataset.cat;if(cat)changeCat(cat)});
     els.cards.addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(!b)return;const {action,id}=b.dataset;if(action==='exclude')toggleExclude(id);else if(action==='check')toggleOwnership(id);else if(['normal','shiny','male','female'].includes(action))toggleOwnership(id,action);});
     // Sprite fallback. Never insert unchecked URLs from an imported file.
-    els.cards.addEventListener('error',e=>{const img=e.target;if(img.tagName!=='IMG')return;const count=Number(img.dataset.try||'0');img.dataset.try=count+1;const next=[img.dataset.fallback,img.dataset.fallback2,img.dataset.fallback3][count];if(count<3&&next&&next!==img.src){img.src=next;}else{img.style.display='none';img.parentElement.classList.add('no-art');}},true);
+    els.cards.addEventListener('error',e=>{
+      const img=e.target;
+      if(img.tagName!=='IMG'||!img.dataset.imageOptions)return;
+      let list=[];try{list=JSON.parse(img.dataset.imageOptions)}catch{}
+      const next=Number(img.dataset.imageIndex||0)+1;
+      const note=img.nextElementSibling;
+      if(next<list.length){
+        img.dataset.imageIndex=String(next);
+        if(note&&note.classList.contains('sprite-note')){
+          note.textContent=list[next].note||'';
+          note.hidden=!list[next].note;
+        }
+        img.src=list[next].url;
+      }else{
+        img.style.display='none';
+        if(note&&note.classList.contains('sprite-note')){
+          note.textContent='画像を取得できません';
+          note.hidden=false;
+        }
+        img.parentElement.classList.add('no-art');
+      }
+    },true);
     const reset=()=>{visibleLimit=PAGE_SIZE;renderCards();};
     els.search.addEventListener('input',reset);els.generation.addEventListener('change',reset);els.formType.addEventListener('change',reset);els.ownership.addEventListener('change',reset);els.showUnreleased.addEventListener('change',reset);
     els.loadMore.addEventListener('click',()=>{visibleLimit+=PAGE_SIZE;renderCards();});
